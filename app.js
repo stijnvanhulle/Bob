@@ -20,8 +20,10 @@ var bobs        = require('./routes/api/bobs');
 var destinations= require('./routes/api/destinations');
 var parties     = require('./routes/api/parties');
 var trips       = require('./routes/api/trips');
-var chatrooms       = require('./routes/api/chatrooms');
+var chatrooms   = require('./routes/api/chatrooms');
 var error       = require('./routes/error');
+
+var auth        = require('./routes/api/auth');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -69,6 +71,9 @@ app.use('/api/destinations', destinations);
 app.use('/api/parties', parties);
 app.use('/api/trips', trips);
 app.use('/api/chatrooms', chatrooms);
+
+app.use('/api/auth', auth);
+
 app.use('/404',error);
 
 

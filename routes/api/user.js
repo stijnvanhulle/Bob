@@ -190,82 +190,9 @@ router.get('/points/amount', function(req, res, next) {
     });
 });
 
-/**
- * @api {post} /api/user/login POST Login
- * @apiVersion 0.0.1
- * @apiName login
- * @apiGroup User
- * @apiDescription Login the user
- *
- * @apiParam {String} Email
- * @apiParam {String} Password Gehashed
- *
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       success: true
- *     }
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       success: false
- *     }
- */
-router.post('/login',jsonParser, function(req, res, next) {
-    passport.authenticate('local', function(err, user, info) {
-        //console.log(err, info, user);
-        //login db
-        if (err)   { return res.json({ error: err.message, success: false }); }
-        if (!user) { return res.json({error : "Invalid Login", success: false}); }
-        req.login(user, {}, function(err) {
-            if (err) { return res.json({error:err, success: false}); }
-            return res.json(
-                { user: {
-                    ID: req.user[0].ID,
-                    Email: req.user[0].Email,
-                    FirstName: req.user[0].FirstName,
-                    LastName: req.user[0].LastName,
-                    Cellphone:req.user[0].Cellphone,
-                    IsBob:req.user[0].IsBob
-                },
-                    success: true
-                });
-        });
-    })(req, res, next);
-});
 
 /**
- * @api {post} /api/user/logoff POST Logoff
- * @apiVersion 0.0.1
- * @apiName logoff
- * @apiGroup User
- * @apiDescription Logoff current user
- *
- *
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       success: true
- *     }
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       success: false
- *     }
- */
-router.post('/logoff', function(req, res){
-    req.logout();
-    console.log(req.isAuthenticated());
-    res.json({success: true});
-
-});
-
-/**
- * @api {post} /api/user/login POST Register
+ * @api {post} /api/user/register POST Register
  * @apiVersion 0.0.1
  * @apiName register
  * @apiGroup User
@@ -296,12 +223,95 @@ router.post('/logoff', function(req, res){
  *       success: false
  *     }
  */
-router.post('/register', function(req, res){
-    res.json({success: true});
+router.post('/register',jsonParser, function(req, res){
+    var register=JSON.parse(req.body.Register);
+
+
+    pool.getConnection(function(error, connection) {
+        connection.beginTransaction(function(err) {
+            if (error) { res.json({success:false,error:error.message}); }
+
+            if(register.IsBob==true){
+                connection.query({
+                        sql: 'INSERT INTO Bobs (PricePerKm, BobsType_ID, LicensePlate, AutoType_ID) ' +
+                        'VALUES (?,?,?,?)',
+                        timeout: 40000 // 40s
+                    },
+                    [register.PricePerKm, register.BobsType_ID,register.LicensePlate, register.AutoType_ID],
+                    function (error, rows, fields) {
+                        var ID;
+                        if(error){
+                            return connection.rollback(function() {
+                                res.json({success:false,error:error.message});
+                            });
+                        }else{
+                            ID = rows.insertId;
+                        }
+                        
+
+                        //SELECT ID FROM Users WHERE Email=?
+                        connection.query({
+                                sql: 'INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID,Bobs_ID) ' +
+                                'VALUES (?,?,?,?,?,?,?)',
+                                timeout: 40000 // 40s
+
+                            },
+                            [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID, ID],
+                            function (error, rows, fields) {
+                                if (error) {
+                                    return connection.rollback(function() {
+                                        res.json({success:false,error:error.message});
+                                    });
+                                }
+                                connection.commit(function(error) {
+                                    if (error) {
+                                        return connection.rollback(function() {
+                                            res.json({success:false,error:error.message});
+                                        });
+                                    }else{
+                                        res.json({success:true});
+                                    }
+                                    console.log('success!');
+                                });
+                            });
+                    });
+            }else{
+                connection.query({
+                        sql: 'INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID) ' +
+                        'VALUES (?,?,?,?,?,?)',
+                        timeout: 40000 // 40s
+                    },
+                    [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID],
+                    function (error, rows, fields) {
+                        if (error) {
+                            return connection.rollback(function() {
+                                res.json({success:false,error:error.message});
+                            });
+                        }
+                        connection.commit(function(error) {
+                            if (error) {
+                                return connection.rollback(function() {
+                                    res.json({success:false,error:error.message});
+                                });
+                            }else{
+                                res.json({success:true});
+                            }
+                            console.log('success!');
+                        });
+
+                    });
+            }
+
+
+
+        });
+
+
+    });
 });
 
 /**
- * @api {put} /api/user/login PUT Register
+ * @api {put} /api/user/register PUT Register
  * @apiVersion 0.0.1
  * @apiName edit
  * @apiGroup User
