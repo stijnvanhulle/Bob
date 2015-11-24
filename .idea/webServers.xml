@@ -2,7 +2,7 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="372b8843-8199-4abc-b74b-91d19781a92b" name="bob" url="http://bob-2u15832u.cloudapp.net/">
+      <webServer id="7fc54e5c-3b31-4ba9-9957-26debfa5f668" name="bob" url="http://bob-2u15832u.cloudapp.net">
         <fileTransfer host="bob-2u15832u.cloudapp.net" port="22" accessType="SFTP" password="dfcddf93dfccdffedfffdf93dffadfe4dfdedfc5df9fdf9edfe6dfe2dfcd" username="bob">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />

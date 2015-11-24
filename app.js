@@ -12,18 +12,22 @@ var cors            = require("./libs/enable_cors")(app);
 //auth
 var passport    = require('passport');
 
-
-var user        = require('./routes/api/user');
-var countries   = require('./routes/api/countries');
-var cities      = require('./routes/api/cities');
+var auth        = require('./routes/api/auth');
+var autotypes   = require('./routes/api/autotypes');
 var bobs        = require('./routes/api/bobs');
-var destinations= require('./routes/api/destinations');
-var parties     = require('./routes/api/parties');
-var trips       = require('./routes/api/trips');
 var chatrooms   = require('./routes/api/chatrooms');
+var cities      = require('./routes/api/cities');
+var countries   = require('./routes/api/countries');
+var destinations= require('./routes/api/destinations');
+var friends     = require('./routes/api/friends');
+var parties     = require('./routes/api/parties');
+var statuses    = require('./routes/api/statuses');
+var trips       = require('./routes/api/trips');
+var user        = require('./routes/api/user');
+var users       = require('./routes/api/users');
+
 var error       = require('./routes/error');
 
-var auth        = require('./routes/api/auth');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -63,16 +67,20 @@ require('./libs/auth');
 
 
 //api routes
-app.use('/api/user', user);
-app.use('/api/countries', countries);
-app.use('/api/cities', cities);
-app.use('/api/bobs', bobs);
-app.use('/api/destinations', destinations);
-app.use('/api/parties', parties);
-app.use('/api/trips', trips);
-app.use('/api/chatrooms', chatrooms);
-
 app.use('/api/auth', auth);
+
+app.use('/api/autotypes', autotypes);
+app.use('/api/bobs', bobs);
+app.use('/api/chatrooms', chatrooms);
+app.use('/api/cities', cities);
+app.use('/api/countries', countries);
+app.use('/api/destinations', destinations);
+app.use('/api/friends', friends);
+app.use('/api/parties', parties);
+app.use('/api/statuses',statuses);
+app.use('/api/trips', trips);
+app.use('/api/user', user);
+app.use('/api/users', users);
 
 app.use('/404',error);
 

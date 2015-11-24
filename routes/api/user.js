@@ -247,7 +247,7 @@ router.post('/register',jsonParser, function(req, res){
                         }else{
                             ID = rows.insertId;
                         }
-                        
+
 
                         //SELECT ID FROM Users WHERE Email=?
                         connection.query({
@@ -311,12 +311,14 @@ router.post('/register',jsonParser, function(req, res){
 });
 
 /**
- * @api {put} /api/user/register PUT Register
+ * @api {put} /api/user/edit PUT Edit
  * @apiVersion 0.0.1
  * @apiName edit
  * @apiGroup User
  * @apiDescription Edit a currentuser
  *
+ * @apiParam {Integer} Bobs_ID
+ * @apiParam {Integer} Users_ID
  * @apiParam {String} Firstname
  * @apiParam {String} Lastname
  * @apiParam {String} Email
@@ -342,7 +344,178 @@ router.post('/register',jsonParser, function(req, res){
  *       success: false
  *     }
  */
-router.put('/register', function(req, res){
-    res.json({success: true});
+router.put('/edit', function(req, res){
+    var register=JSON.parse(req.body.Register);
+
+
+    pool.getConnection(function(error, connection) {
+        connection.beginTransaction(function(err) {
+            if (error) { res.json({success:false,error:error.message}); }
+
+            if(register.IsBob==true || register.Bobs_ID!=null){
+                connection.query({
+                        sql: 'UPDATE Bobs SET PricePerKm=?, BobsType_ID=?, LicensePlate=?, AutoType_ID=?) ' +
+                        'WHERE Bobs.ID=?',
+                        timeout: 40000 // 40s
+                    },
+                    [register.PricePerKm, register.BobsType_ID,register.LicensePlate, register.AutoType_ID, register.Bobs_ID],
+                    function (error, rows, fields) {
+                        var ID;
+                        if(error){
+                            return connection.rollback(function() {
+                                res.json({success:false,error:error.message});
+                            });
+                        }else{
+                            ID = register.Bobs_ID;
+                        }
+
+
+                        //SELECT ID FROM Users WHERE Email=?
+                        connection.query({
+                                sql: 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=?,Bobs_ID=? ' +
+                                'WHERE Users.ID=?',
+                                timeout: 40000 // 40s
+
+                            },
+                            [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID, ID, register.Users_ID],
+                            function (error, rows, fields) {
+                                if (error) {
+                                    return connection.rollback(function() {
+                                        res.json({success:false,error:error.message});
+                                    });
+                                }
+                                connection.commit(function(error) {
+                                    if (error) {
+                                        return connection.rollback(function() {
+                                            res.json({success:false,error:error.message});
+                                        });
+                                    }else{
+                                        res.json({success:true});
+                                    }
+                                    console.log('success!');
+                                });
+                            });
+                    });
+            }else{
+                connection.query({
+                        sql: 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=?' +
+                        'WHERE Users.ID=?',
+                        timeout: 40000 // 40s
+                    },
+                    [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID,register.Users_ID],
+                    function (error, rows, fields) {
+                        if (error) {
+                            return connection.rollback(function() {
+                                res.json({success:false,error:error.message});
+                            });
+                        }
+                        connection.commit(function(error) {
+                            if (error) {
+                                return connection.rollback(function() {
+                                    res.json({success:false,error:error.message});
+                                });
+                            }else{
+                                res.json({success:true});
+                            }
+                            console.log('success!');
+                        });
+
+                    });
+            }
+
+
+
+        });
+
+
+    });
 });
+
+
+/**
+ * @api {post} /api/user/location POST Location
+ * @apiVersion 0.0.1
+ * @apiName Location
+ * @apiGroup User
+ * @apiDescription Update location
+ *
+ * @apiParam {String} Latitude
+ * @apiParam {String} Longitude
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       success: true
+ *     }
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       success: false
+ *     }
+ */
+router.post('/location',jsonParser, function(req, res){
+    var location=JSON.parse(req.body.Location);
+
+    var CurrentLocation={'latitude':location.Latitude,'longitude': location.Longitude};
+    var users_ID= req.user[0].ID;
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: 'INSERT INTO Users_Locations(Users_ID,Location) VALUES(?,?)',
+                timeout: 40000 // 40s
+            },
+            [users_ID,CurrentLocation],
+            function (error, rows, fields) {
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
+                    res.json({success:true});
+                }
+
+
+            });
+    });
+});
+
+/**
+ * @api {get} /api/user/location GET Location
+ * @apiVersion 0.0.1
+ * @apiName LatestLocation
+ * @apiGroup User
+ * @apiDescription Latest location
+ *
+ * @apiSuccess {Integer} ID Table: Users
+ * @apiSuccess {String} Firstname Table: Users
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       success: false
+ *     }
+ */
+router.get('/location',jsonParser, function(req, res){
+    var users_ID= req.user[0].ID;
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: 'SELECT * FROM Users_Locations WHERE ' +
+                'Users_ID=? ' +
+                'ORDER BY Added DESC LIMIT 1',
+                timeout: 40000 // 40s
+            },
+            [users_ID],
+            function (error, results, fields) {
+                //if (error) throw error;
+                if (error){
+                    res.json({success:false});
+                } else{
+                    res.json(results[0]);
+                }
+
+
+            });
+    });
+});
+
 module.exports = router;

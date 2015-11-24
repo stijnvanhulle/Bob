@@ -17,6 +17,8 @@ function findByEmail(email,password, fn) {
         if (error) throw error;
         var query;
 
+        //TODO maken dat hij online toevoegt aan de db
+
             query='SELECT ID, FirstName, LastName, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users WHERE Email=? AND Password=?';
 
             connection.query({//AND Password= ?

@@ -12,7 +12,7 @@ var pool            = require('../../libs/mysql');
 /**
  * @api {get} /api/trips GET trips[]
  * @apiVersion 0.0.1
- * @apiName /
+ * @apiName All
  * @apiGroup Trips
  * @apiDescription Get all trips of current user
  *
@@ -36,8 +36,8 @@ var pool            = require('../../libs/mysql');
  *     }
  */
 router.get('/', function(req, res, next) {
+    var users_ID= req.user[0].ID;
     if(req.isAuthenticated()){
-        var id=1;
         var sql="";
 
         if(id!=null){
@@ -55,7 +55,7 @@ router.get('/', function(req, res, next) {
                     sql: sql,
                     timeout: 40000 // 40s
                 },
-                [id],
+                [users_ID],
                 function (error, results, fields) {
                     if (error) throw error;
                     if (error){

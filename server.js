@@ -7,8 +7,8 @@ var fs = require('fs');
 const PORT=80;
 
 var certificate = {
-    key: fs.readFileSync('/srv/bob/certs/self_signed_ssl.key'),
-    cert: fs.readFileSync('/srv/bob/certs/self_signed_ssl.crt')
+    //key: fs.readFileSync('/srv/bob/certs/self_signed_ssl.key'),
+    //cert: fs.readFileSync('/srv/bob/certs/self_signed_ssl.crt')
 };
 
 //Create a server
@@ -21,10 +21,10 @@ server.listen(PORT, function(){
     //Callback triggered when server is successfully listening. Hurray!
     console.log("Server listening on: http://stijnvanhulle.be/:%s", PORT);
 });
-https.createServer(certificate, app).listen(443, function(){
+//https.createServer(certificate, app).listen(443, function(){
     //Callback triggered when server is successfully listening. Hurray!;
     console.log("Server listening on: http://stijnvanhulle.be/:%s", "443");
-});
+//});
 
 //sockets
 io.on('connection', function(socket){
