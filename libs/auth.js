@@ -1,7 +1,6 @@
 var passport                = require('passport');
 var mysql                   = require('mysql');
 var LocalStrategy           = require('passport-local').Strategy;
-var BearerStrategy          = require('passport-http-bearer').Strategy;
 var FacebookStrategy        = require('passport-facebook').Strategy;
 var pool                    = require('./mysql');
 
@@ -76,7 +75,8 @@ function findByFacebookID(id, fn) {
 passport.use('local',new LocalStrategy({
         passReqToCallback : true,
         usernameField: 'Email',
-        passwordField: 'Password'
+        passwordField: 'Password',
+        session: false
     },
     function(body, email, password, done) {
         // asynchronous verification, for effect...

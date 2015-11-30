@@ -1,15 +1,13 @@
 var express         = require('express');
-var mysql           = require('mysql');
 var path            = require("path");
 var passport        = require('passport');
 var app             = express();
 var router          = express.Router();
 var fs              = require('fs');
-var passport        = require('passport');
 var bodyParser      = require('body-parser');
 var jsonParser      = bodyParser.json({ type: 'application/json' } );
-var pool            = require('../../libs/mysql');
-
+var controller      = require('../../controllers/userController');
+var access          = require('../../controllers/authController').access;
 /**
  * @api {get} /api/user/ GET user
  * @apiVersion 0.0.1
@@ -31,31 +29,7 @@ var pool            = require('../../libs/mysql');
  *       success: false
  *     }
  */
-router.get('/', function(req, res, next) {
-    if(req.isAuthenticated()){
-        var id= req.user[0].ID;
-        pool.getConnection(function(error, connection) {
-            connection.query({
-                    sql: 'SELECT ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users ' +
-                        'WHERE ID=?',
-                    timeout: 40000 // 40s
-                },
-                [id],
-                function (error, results, fields) {
-                    //if (error) throw error;
-                    if (error){
-                        res.json({success:false});
-                    } else{
-                        res.json(results[0]);
-                    }
-                }
-            );
-        });
-    }else{
-        res.json({success:false, error:'Not authenticated'});
-    }
-
-});
+router.get('/', access, controller.getUser);
 
 /**
  * @api {get} /api/user/profile GET profile
@@ -83,37 +57,7 @@ router.get('/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.get('/profile/', function(req, res, next) {
-    //var id=req.params.id;
-    var id=1;
-    var sql="";
-
-    if(id!=null){
-        sql='SELECT Users.ID as Users_ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob, '+
-        'Bobs.ID as Bobs_ID, Bobs.BobsType_ID As BobsType_ID, BobsType.Name As BobsType_Name, Bobs.Autotype_ID as Autotype_ID, Autotype.Name as Autotype_Name, Bobs.LicensePlate FROM Users '+
-        'INNER JOIN Bobs ON Users.Bobs_ID=Bobs.ID '+
-        'INNER JOIN BobsType ON BobsType.ID=Bobs.BobsType_ID '+
-        'INNER JOIN Autotype ON Autotype.ID=Bobs.Autotype_ID ' +
-        'WHERE Users.ID=?';
-    }
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: sql,
-                timeout: 40000 // 40s
-            },
-            [id],
-            function (error, results, fields) {
-                if (error) throw error;
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results[0]);
-                }
-            }
-        );
-    });
-});
+router.get('/profile/', access, controller.getProfile);
 /**
  * @api {get} /api/user/points GET points[]
  * @apiVersion 0.0.1
@@ -132,27 +76,7 @@ router.get('/profile/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.get('/points/', function(req, res, next) {
-    var sql='SELECT PointsDescription_ID,PointsDescription.Description as PointsDescription_Name,PointsDescription.Points as Points, Added FROM Bob.Users_PointsDescription '+
-        'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID';
-
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: sql,
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                if (error) throw error;
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results);
-                }
-            }
-        );
-    });
-});
+router.get('/points/', access, controller.getPoints);
 
 /**
  * @api {get} /api/user/points/amount GET Total points
@@ -169,27 +93,7 @@ router.get('/points/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.get('/points/amount', function(req, res, next) {
-    var sql='SELECT SUM(PointsDescription.Points) as Points FROM Bob.Users_PointsDescription '+
-            'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID';
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: sql,
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                if (error) throw error;
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results[0]);
-                }
-            }
-        );
-    });
-});
-
+router.get('/points/amount', access, controller.getPointsAmount);
 
 /**
  * @api {post} /api/user/register POST Register
@@ -223,92 +127,7 @@ router.get('/points/amount', function(req, res, next) {
  *       success: false
  *     }
  */
-router.post('/register',jsonParser, function(req, res){
-    var register=JSON.parse(req.body.Register);
-
-
-    pool.getConnection(function(error, connection) {
-        connection.beginTransaction(function(err) {
-            if (error) { res.json({success:false,error:error.message}); }
-
-            if(register.IsBob==true){
-                connection.query({
-                        sql: 'INSERT INTO Bobs (PricePerKm, BobsType_ID, LicensePlate, AutoType_ID) ' +
-                        'VALUES (?,?,?,?)',
-                        timeout: 40000 // 40s
-                    },
-                    [register.PricePerKm, register.BobsType_ID,register.LicensePlate, register.AutoType_ID],
-                    function (error, rows, fields) {
-                        var ID;
-                        if(error){
-                            return connection.rollback(function() {
-                                res.json({success:false,error:error.message});
-                            });
-                        }else{
-                            ID = rows.insertId;
-                        }
-
-
-                        //SELECT ID FROM Users WHERE Email=?
-                        connection.query({
-                                sql: 'INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID,Bobs_ID) ' +
-                                'VALUES (?,?,?,?,?,?,?)',
-                                timeout: 40000 // 40s
-
-                            },
-                            [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID, ID],
-                            function (error, rows, fields) {
-                                if (error) {
-                                    return connection.rollback(function() {
-                                        res.json({success:false,error:error.message});
-                                    });
-                                }
-                                connection.commit(function(error) {
-                                    if (error) {
-                                        return connection.rollback(function() {
-                                            res.json({success:false,error:error.message});
-                                        });
-                                    }else{
-                                        res.json({success:true});
-                                    }
-                                    console.log('success!');
-                                });
-                            });
-                    });
-            }else{
-                connection.query({
-                        sql: 'INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID) ' +
-                        'VALUES (?,?,?,?,?,?)',
-                        timeout: 40000 // 40s
-                    },
-                    [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID],
-                    function (error, rows, fields) {
-                        if (error) {
-                            return connection.rollback(function() {
-                                res.json({success:false,error:error.message});
-                            });
-                        }
-                        connection.commit(function(error) {
-                            if (error) {
-                                return connection.rollback(function() {
-                                    res.json({success:false,error:error.message});
-                                });
-                            }else{
-                                res.json({success:true});
-                            }
-                            console.log('success!');
-                        });
-
-                    });
-            }
-
-
-
-        });
-
-
-    });
-});
+router.post('/register',jsonParser, access,controller.postUser);
 
 /**
  * @api {put} /api/user/edit PUT Edit
@@ -344,92 +163,7 @@ router.post('/register',jsonParser, function(req, res){
  *       success: false
  *     }
  */
-router.put('/edit', function(req, res){
-    var register=JSON.parse(req.body.Register);
-
-
-    pool.getConnection(function(error, connection) {
-        connection.beginTransaction(function(err) {
-            if (error) { res.json({success:false,error:error.message}); }
-
-            if(register.IsBob==true || register.Bobs_ID!=null){
-                connection.query({
-                        sql: 'UPDATE Bobs SET PricePerKm=?, BobsType_ID=?, LicensePlate=?, AutoType_ID=?) ' +
-                        'WHERE Bobs.ID=?',
-                        timeout: 40000 // 40s
-                    },
-                    [register.PricePerKm, register.BobsType_ID,register.LicensePlate, register.AutoType_ID, register.Bobs_ID],
-                    function (error, rows, fields) {
-                        var ID;
-                        if(error){
-                            return connection.rollback(function() {
-                                res.json({success:false,error:error.message});
-                            });
-                        }else{
-                            ID = register.Bobs_ID;
-                        }
-
-
-                        //SELECT ID FROM Users WHERE Email=?
-                        connection.query({
-                                sql: 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=?,Bobs_ID=? ' +
-                                'WHERE Users.ID=?',
-                                timeout: 40000 // 40s
-
-                            },
-                            [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID, ID, register.Users_ID],
-                            function (error, rows, fields) {
-                                if (error) {
-                                    return connection.rollback(function() {
-                                        res.json({success:false,error:error.message});
-                                    });
-                                }
-                                connection.commit(function(error) {
-                                    if (error) {
-                                        return connection.rollback(function() {
-                                            res.json({success:false,error:error.message});
-                                        });
-                                    }else{
-                                        res.json({success:true});
-                                    }
-                                    console.log('success!');
-                                });
-                            });
-                    });
-            }else{
-                connection.query({
-                        sql: 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=?' +
-                        'WHERE Users.ID=?',
-                        timeout: 40000 // 40s
-                    },
-                    [register.Firstname,register.Lastname,register.Email,register.Cellphone, register.Password, register.FacebookID,register.Users_ID],
-                    function (error, rows, fields) {
-                        if (error) {
-                            return connection.rollback(function() {
-                                res.json({success:false,error:error.message});
-                            });
-                        }
-                        connection.commit(function(error) {
-                            if (error) {
-                                return connection.rollback(function() {
-                                    res.json({success:false,error:error.message});
-                                });
-                            }else{
-                                res.json({success:true});
-                            }
-                            console.log('success!');
-                        });
-
-                    });
-            }
-
-
-
-        });
-
-
-    });
-});
+router.put('/edit', jsonParser, access,controller.putUser);
 
 
 /**
@@ -454,29 +188,7 @@ router.put('/edit', function(req, res){
  *       success: false
  *     }
  */
-router.post('/location',jsonParser, function(req, res){
-    var location=JSON.parse(req.body.Location);
-
-    var CurrentLocation={'latitude':location.Latitude,'longitude': location.Longitude};
-    var users_ID= req.user[0].ID;
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'INSERT INTO Users_Locations(Users_ID,Location) VALUES(?,?)',
-                timeout: 40000 // 40s
-            },
-            [users_ID,CurrentLocation],
-            function (error, rows, fields) {
-                if(error){
-                    res.json({success:false,error:error.message});
-                }else{
-                    res.json({success:true});
-                }
-
-
-            });
-    });
-});
+router.post('/location',jsonParser, access,controller.postLocation);
 
 /**
  * @api {get} /api/user/location GET Location
@@ -494,28 +206,6 @@ router.post('/location',jsonParser, function(req, res){
  *       success: false
  *     }
  */
-router.get('/location',jsonParser, function(req, res){
-    var users_ID= req.user[0].ID;
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'SELECT * FROM Users_Locations WHERE ' +
-                'Users_ID=? ' +
-                'ORDER BY Added DESC LIMIT 1',
-                timeout: 40000 // 40s
-            },
-            [users_ID],
-            function (error, results, fields) {
-                //if (error) throw error;
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results[0]);
-                }
-
-
-            });
-    });
-});
+router.get('/location',access,controller.getLocation);
 
 module.exports = router;

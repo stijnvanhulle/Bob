@@ -8,10 +8,37 @@ var cookieParser    = require('cookie-parser');
 var bodyParser      = require('body-parser');
 var multer          = require('multer');
 var cors            = require("./libs/enable_cors")(app);
+var upload          = multer({ dest: path.join(__dirname, 'uploads')});
+var passport        = require('passport'); //authentication
 
-//auth
-var passport    = require('passport');
+// SETUP
+app.use(compression()); // GZIP all assets
+app.set('partials',path.join(__dirname,'views/partials'));
+app.set('view engine', 'jade');
+app.set('views', path.join(__dirname, 'views'));
+app.set('view cache', true);
+app.enable('trust proxy');//set proxy on true, ip ophalen
+app.use(logger('dev')); //logger
+app.use(cookieParser()); //cookies
+app.use(bodyParser.urlencoded({ extended: true  })); //using auth + formdata
+app.use(bodyParser.json()); // parse application/json
 
+app.use(express.static(__dirname + '/public'));
+
+//authentication
+app.use(session({
+  secret: 'bob-app',
+  resave: true,
+  expires: true,
+  saveUninitialized: false,
+  path:"/*" //NEEDED
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+require('./libs/auth');
+
+
+//api routes
 var auth        = require('./routes/api/auth');
 var autotypes   = require('./routes/api/autotypes');
 var bobs        = require('./routes/api/bobs');
@@ -28,45 +55,6 @@ var users       = require('./routes/api/users');
 
 var error       = require('./routes/error');
 
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('partials',path.join(__dirname,'views/partials'));
-app.set('view engine', 'jade');
-
-
-//custom
-app.enable('trust proxy');//set proxy on true, ip ophalen
-
-app.use(compression());
-// GZIP all assets
-
-app.use(logger('dev')); //log alles van request naar de console
-app.use(cookieParser());
-
-//deze 2 nodig om auth en formdata te gebruiken
-app.use(bodyParser.urlencoded({ extended: true  }));
-app.use(multer({ dest: './public/uploads/'}));
-
-app.use(express.static(__dirname + '/public'));
-app.use('/bower_components',  express.static(__dirname + '/bower_components'));
-
-
-//auth
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  expires: true,
-  saveUninitialized: false,
-  path:"/*" //NEEDED
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-require('./libs/auth');
-
-
-//api routes
 app.use('/api/auth', auth);
 
 app.use('/api/autotypes', autotypes);
@@ -84,9 +72,12 @@ app.use('/api/users', users);
 
 app.use('/404',error);
 
+app.use('/', function(req, res, next) {
+  res.redirect('/api');
+});
 
 
-
+//standard
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
@@ -101,7 +92,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('template/error', {
+    res.render('views/error', {
       message: err.message,
       error: err
     });
@@ -112,7 +103,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('template/error', {
+  res.render('views/error', {
     message: err.message,
     error: {}
   });

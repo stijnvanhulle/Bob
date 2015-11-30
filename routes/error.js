@@ -5,7 +5,7 @@ var router = express.Router();
 
 
 router.get('/', function(req, res){
-    res.render('template/error');
+    res.render('views/error');
 });
 
 module.exports = router;

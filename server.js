@@ -1,41 +1,47 @@
-var http = require('http');
-var https = require('https');
-var app = require('./app');
-var io =  require('socket.io');
-var fs = require('fs');
-//Lets define a port we want to listen to
-const PORT=80;
+var app         = require('./app');
+var server      = require('http').Server(app);
+var https       = require('https');
+var io          = require('socket.io')(server);
+var fs          = require('fs');
 
-var certificate = {
-    //key: fs.readFileSync('/srv/bob/certs/self_signed_ssl.key'),
-    //cert: fs.readFileSync('/srv/bob/certs/self_signed_ssl.crt')
+var options={
+    port:80,
+    secure_port:443
+    /*
+    certificate: {
+        key: fs.readFileSync('/srv/bob/certs/self_signed_ssl.key'),
+        cert: fs.readFileSync('/srv/bob/certs/self_signed_ssl.crt')
+    }
+     */
 };
 
-//Create a server
-var server = http.createServer(app);
-//https.createServer(options, app).listen(443);r
-io = io.listen(server);
-
-//Lets start our server
-server.listen(PORT, function(){
-    //Callback triggered when server is successfully listening. Hurray!
-    console.log("Server listening on: http://stijnvanhulle.be/:%s", PORT);
+server.listen(options.port, function(){
+    var address = server.address();
+    if(address.address=="::"){
+        address.address="localhost";
+    }
+    console.log("Server listening on: http://%s/:%s",address.address, address.port);
+    global.address="http://" + address.address + '/:'+ address.port;
 });
-//https.createServer(certificate, app).listen(443, function(){
-    //Callback triggered when server is successfully listening. Hurray!;
-    console.log("Server listening on: http://stijnvanhulle.be/:%s", "443");
-//});
 
-//sockets
-io.on('connection', function(socket){
-    console.log('a user connected');
-    io.emit('connect', 'a user connected');
+/*
+https.createServer(options.certificate, app).listen(options.secure_port, function(){
+    var address = server.address();
+    if(address.address=="::"){
+        address.address="localhost";
 
-    socket.on('disconnect', function(){
-        console.log('user disconnected');
-    });
-
+    }
+    console.log("Server listening on: http://%s/:%s",address.address, address.port);
+    global.address="http://" + address.address + '/:'+ address.port;
 });
-global.socketIO = io;
+*/
 
-
+require('./libs/socket')(io,function(result){
+    if(result==true){
+        console.log("Server socket connected");
+    }else{
+        console.log("Server socket not connected");
+        process.exit(1);
+    }
+});
+module.exports = server;
