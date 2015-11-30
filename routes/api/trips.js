@@ -57,7 +57,7 @@ router.get('/', function(req, res, next) {
                 },
                 [users_ID],
                 function (error, results, fields) {
-                    if (error) throw error;
+                    connection.release();
                     if (error){
                         res.json({success:false});
                     } else{
@@ -122,7 +122,7 @@ router.get('/current', function(req, res, next) {
             },
             [id],
             function (error, results, fields) {
-                if (error) throw error;
+                connection.release();
                 if (error){
                     res.json({success:false});
                 } else{

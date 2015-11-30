@@ -37,7 +37,7 @@ router.get('/', function(req, res, next) {
                 timeout: 40000 // 40s
             },
             function (error, results, fields) {
-                //if (error) throw error;
+                connection.release();
                 if (error){
                     res.json({success:false});
                 } else{
