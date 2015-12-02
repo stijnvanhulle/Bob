@@ -16,7 +16,8 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].ID,null,'No ID');
+                    assert.notEqual(item[0].Users_ID,null,'No ID');
+                    assert.equal(item[0].IsBob,true,'No user');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
@@ -31,7 +32,10 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].ID,null,'No ID');
+                    if(item[0]!=null){
+                        assert.notEqual(item[0].Users_ID,null,'No ID');
+                        assert.equal(item[0].IsBob,true,'No user');
+                    }
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()

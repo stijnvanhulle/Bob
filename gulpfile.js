@@ -15,7 +15,7 @@ var gulp = require("gulp"),
 gulp.task("default", function() {
     var apiDocWatcher = gulp.watch("./routes/api/*", ["apidoc"]);
     apiDocWatcher.on("change", function(event) {
-        console.log("File: " + event.path + " was " + event.typed);
+        console.log("File: " + event.path + " was " + event.type);
     });
 });
 

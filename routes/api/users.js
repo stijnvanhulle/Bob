@@ -14,12 +14,19 @@ var access          = require('../../controllers/authController').access;
  * @apiGroup Users
  * @apiDescription Get all users
  *
- * @apiSuccess {Integer} ID Table: Users
- * @apiSuccess {String} Firstname Table: Users
- * @apiSuccess {String} Lastname Table: Users
- * @apiSuccess {String} Email Table: Users
- * @apiSuccess {String} Cellphone Table: Users
+ * @apiSuccess {Integer} Users_ID Table: Users
+ * @apiSuccess {String} Users_Firstname Table: Users
+ * @apiSuccess {String} Users_Lastname Table: Users
+ * @apiSuccess {String} Users_Email Table: Users
+ * @apiSuccess {String} Users_Cellphone Table: Users
  * @apiSuccess {Boolean} IsBob Table: Users
+ *
+ * @apiSuccess {Integer} Bobs_ID Table: Bobs
+ * @apiSuccess {Integer} Bobs_BobsType_ID Table: Bobs
+ * @apiSuccess {String} Users_Cellphone Table: Bobs
+ * @apiSuccess {String} Bobs_LicensePlate Table: Bobs
+ * @apiSuccess {Timestamp} Bobs_Added Table: Bobs
+ * @apiSuccess {Boolean} Bobs_Active Table: Bobs
  *
  *
  * @apiErrorExample Error-Response:
@@ -38,12 +45,19 @@ router.get('/', access, controller.getUsers);
  * @apiGroup Users
  * @apiDescription Get all users online
  *
- * @apiSuccess {Integer} ID Table: Users
- * @apiSuccess {String} Firstname Table: Users
- * @apiSuccess {String} Lastname Table: Users
- * @apiSuccess {String} Email Table: Users
+ * @apiSuccess {Integer} Users_ID Table: Users
+ * @apiSuccess {String} Users_Firstname Table: Users
+ * @apiSuccess {String} Users_Lastname Table: Users
+ * @apiSuccess {String} Users_Email Table: Users
+ * @apiSuccess {String} Users_Cellphone Table: Users
  * @apiSuccess {Boolean} IsBob Table: Users
- * @apiSuccess {Boolean} Online Table: Users
+ *
+ * @apiSuccess {Integer} Bobs_ID Table: Bobs
+ * @apiSuccess {Integer} Bobs_BobsType_ID Table: Bobs
+ * @apiSuccess {String} Users_Cellphone Table: Bobs
+ * @apiSuccess {String} Bobs_LicensePlate Table: Bobs
+ * @apiSuccess {Timestamp} Bobs_Added Table: Bobs
+ * @apiSuccess {Boolean} Bobs_Active Table: Bobs
  *
  *
  * @apiErrorExample Error-Response:

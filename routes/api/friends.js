@@ -6,6 +6,7 @@ var jsonParser      = bodyParser.json({ type: 'application/json' } );
 var controller      = require('../../controllers/friendsController');
 var access          = require('../../controllers/authController').access;
 
+//todo: friends api text
 /**
  * @api {get} /api/friends/ GET friends
  * @apiVersion 0.0.1
@@ -23,6 +24,7 @@ var access          = require('../../controllers/authController').access;
  *       success: false
  *     }
  */
+
 router.get('/', access, controller.getFriends);
 
 module.exports = router;

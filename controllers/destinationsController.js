@@ -53,6 +53,96 @@ var getDefaultDestination=function(req,res){
     });
 };
 
+var postDestination=function(req,res){
+    var user_ID= req.user[0].ID;
+
+    var obj; //autotype
+    try {
+        obj = JSON.parse(req.body);
+    } catch (e) {
+        obj = req.body;
+    }
+
+    pool.getConnection(function(error, connection) {
+        connection.beginTransaction(function (err) {
+            if (err) {
+                connection.release();
+                res.json({success: false, error: err.message});
+            }
+
+            async.waterfall([
+                function (cb) {
+                    addDestination(connection, obj, function (err, id) {
+                        if (err) {
+                            cb(err, null);
+                        } else {
+                            cb(null, id);
+                        }
+                    });
+                },
+                function (destination_ID, cb) {
+                    addUserDestination(connection, obj,destination_ID, user_ID, function (err) {
+                        if (err) {
+                            cb(err, false);
+                        } else {
+                            cb(null, true);
+                        }
+                    });
+
+                }
+            ], function (err, result) {
+                commit(connection, err, res);
+            });
+
+        });
+
+    });
+};
+
+var addDestination=function(connection, destination, cb){
+    var sql;
+    var items;
+    sql='INSERT INTO Destinations (Cities_ID,Location) ' +
+        'VALUES (?,?)';
+    items=[destination.Cities_ID, destination.Location];
+
+
+    connection.query({
+            sql: sql,
+            timeout: 40000 // 40s
+
+        },
+        items,
+        function (error, rows, fields) {
+            if (error) {
+                cb(error);
+            }else{
+                cb(null,rows.insertId);
+            }
+        });
+};
+
+var addUserDestination=function(connection, destination, destination_ID, user_ID, cb){
+    var sql;
+    var items;
+    sql='INSERT INTO Users_Destinations (Users_ID,Destinations_ID,Name) ' +
+        'VALUES (?,?,?)';
+    items=[user_ID,destination_ID,destination.Name];
+
+    connection.query({
+            sql: sql,
+            timeout: 40000 // 40s
+
+        },
+        items,
+        function (error, rows, fields) {
+            if (error) {
+                cb(error);
+            }else{
+                cb(null);
+            }
+        });
+};
 
 
 module.exports = (function(){
@@ -60,7 +150,8 @@ module.exports = (function(){
     //public api
     var publicAPI={
         getDestinations:getDestinations,
-        getDefaultDestination:getDefaultDestination
+        getDefaultDestination:getDefaultDestination,
+        postDestination:postDestination
     };
 
     return publicAPI;

@@ -205,4 +205,29 @@ router.post('/location',jsonParser, access,controller.postLocation);
  */
 router.get('/location',access,controller.getLocation);
 
+/**
+ * @api {put} /api/user/change PUT ChangeToBob
+ * @apiVersion 0.0.1
+ * @apiName ChangeToBob
+ * @apiGroup User
+ * @apiDescription Change to bob
+ *
+ * @apiParam {Boolean} IsBob
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       success: true
+ *     }
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       success: false
+ *     }
+ */
+router.put('/change',jsonParser, access,controller.putChange);
+
+
+
 module.exports = router;

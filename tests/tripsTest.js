@@ -40,11 +40,16 @@ var test= function(server,options) {
     });
 
     describe('postTrip', function () {
-        xit('should be logged in', login(server,options.email,options.password));
-        xit("should return a 200 response", function (done) {
-            //TODO: post trip
-            var obj= {
+        it('should be logged in', login(server,options.email,options.password));
+        it("should return a 200 response", function (done) {
+            var friends=[];
+            friends.push(1);
+            friends.push(2);
 
+            var obj= {
+                Bobs_ID:1,
+                Destinations_ID:1,
+                Friends:JSON.stringify(friends)
             };
             server
                 .post('/api/trips')

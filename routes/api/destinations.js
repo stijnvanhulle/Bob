@@ -44,4 +44,29 @@ router.get('/', access,controller.getDestinations);
  */
 router.get('/default', access,controller.getDefaultDestination);
 
+/**
+ * @api {post} /api/destinations/ POST destination
+ * @apiVersion 0.0.1
+ * @apiName post
+ * @apiGroup Destinations
+ * @apiDescription New destination from user
+ *
+ * @apiParam {String} Name Table: Users_Destinations
+ * @apiParam {Integer} Cities_ID Table: Destinations
+ * @apiParam {Integer} Location Table: Destinations, {latitude:x,longitude:y}
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       success: true
+ *     }
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       success: false
+ *     }
+ */
+router.post('/', access, controller.postDestination);
+
 module.exports = router;

@@ -35,39 +35,39 @@ describe('Access server:', function () {
     });
 });
 
-describe('Authtentication testing:',function(){
+xdescribe('Authtentication testing:',function(){
     authTest(server,options);
 });
-describe('User testing:',function(){
+xdescribe('User testing:',function(){
     userTest(server,options);
 });
 
-describe('Autotype testing:',function(){
+xdescribe('Autotype testing:',function(){
     autotypesTest(server,options);
 });
 
-describe('Cities testing:',function(){
+xdescribe('Cities testing:',function(){
     citiesTest(server,options);
 });
-describe('Countries testing:',function(){
+xdescribe('Countries testing:',function(){
     countriesTest(server,options);
 });
-describe('Bobs testing:',function(){
+xdescribe('Bobs testing:',function(){
     bobsTest(server,options);
 });
-describe('Chatrooms testing:',function(){
+xdescribe('Chatrooms testing:',function(){
     chatroomsTest(server,options);
 });
 describe('Destinations testing:',function(){
     destinationsTest(server,options);
 });
-describe('Friends testing:',function(){
+xdescribe('Friends testing:',function(){
     friendsTest(server,options);
 });
 describe('Parties testing:',function(){
     partiesTest(server,options);
 });
-describe('Statuses testing:',function(){
+xdescribe('Statuses testing:',function(){
     statusesTest(server,options);
 });
 describe('Trips testing:',function(){

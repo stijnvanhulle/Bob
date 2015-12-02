@@ -38,7 +38,28 @@ var test= function(server,options) {
                 });
         });
     });
-
+    describe('postDestination', function () {
+        it('should be logged in', login(server,options.email,options.password));
+        it("should return a 200 response", function (done) {
+            var obj={
+                Name: "Test",
+                Cities_ID:22,
+                Location:JSON.stringify({latitude:chance.latitude({min: 50.8010, max: 50.8110}),longitude:chance.latitude({min: 3.209, max: 3.210})})
+        };
+            server
+                .post('/api/destinations')
+                .send(obj)
+                .end(function(err, res){
+                    if (err) return done(err);
+                    var item=res.body;
+                    console.log(item);
+                    assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
+                    assert.equal(res.statusCode, 200,'Success request');
+                    done()
+                });
+        });
+    });
 
 
 };

@@ -16,13 +16,20 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].ID,null,'No ID');
+                    assert.notEqual(item[0].Bobs_ID,null,'No ID');
+                    assert.equal(item[0].IsBob,true,'No bob');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });
         });
     });
+
+    //todo: find bob
+
+    //todo: online bobs
+
+    //todo: post find bobs
 
 
 };

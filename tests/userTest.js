@@ -136,6 +136,27 @@ var test= function(server,options) {
         });
     });
 
+
+    describe('putChange', function () {
+        xit('should be logged in', login(server,options.email,options.password));
+        xit("should return a 200 response", function (done) {
+            var obj= {
+                IsBob:true
+            };
+
+            server
+                .put('/api/user/change')
+                .send(obj)
+                .end(function(err, res){
+                    if (err) return done(err);
+                    var item=res.body;
+                    assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
+                    assert.equal(res.statusCode, 200,'Success request');
+                    done()
+                });
+        });
+    });
 };
 
 module.exports=function(server,options) {

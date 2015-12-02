@@ -14,7 +14,7 @@ var getTrips=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT Trips.ID as Trips_ID, Trips.CurrenLocation as Trips_CurrentLocation, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
+        sql='SELECT Trips.ID as Trips_ID, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID  '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
             'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
@@ -48,7 +48,7 @@ var getCurrentTrip=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT Trips.ID as Trips_ID, Trips.CurrenLocation as Trips_CurrentLocation, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
+        sql='SELECT Trips.ID as Trips_ID, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
             'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
@@ -78,27 +78,25 @@ var getCurrentTrip=function(req,res){
         );
     });
 };
-//TODO: post trip
 var postTrip=function(req,res){
     var user_ID= req.user[0].ID;
-
+    var sql='INSERT INTO Trips(Users_ID, Bobs_ID, Destinations_ID,Friends) VALUES(?,?,?,?)';
     var obj= parser(req.body);
 
     pool.getConnection(function(error, connection) {
         connection.query({
-                sql: '',
+                sql: sql,
                 timeout: 40000 // 40s
             },
-            [],
-            function (error, results, fields) {
+            [user_ID,obj.Bobs_ID,obj.Destinations_ID, obj.Friends],
+            function (error, rows, fields) {
                 connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
                     res.json({success:true});
                 }
-            }
-        );
+            });
     });
 };
 

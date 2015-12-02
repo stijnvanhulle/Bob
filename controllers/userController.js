@@ -113,9 +113,9 @@ var postUser=function(req,res) {
 
     pool.getConnection(function (error, connection) {
         connection.beginTransaction(function (err) {
-            if (error) {
+            if (err) {
                 connection.release();
-                res.json({success: false, error: error.message});
+                res.json({success: false, error: err.message});
             }
 
             if (obj.IsBob == true || register.Bobs_ID!=null) {
@@ -253,6 +253,59 @@ var postLocation=function(req,res){
     });
 };
 
+var putChange=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql;
+    var items;
+
+    var obj= parser(req.body);
+
+    pool.getConnection(function(error, connection) {
+        if(obj.IsBob){
+            bobExist(user_ID, connection, function(done){
+                if(done==true){//exist
+                    sql='UPDATE Bobs INNER JOIN Users ON Users.Bobs_ID=Bobs.ID ' +
+                        'SET Bobs.Active=true ' +
+                        'WHERE Users.ID=?';
+                    items=[user_ID];
+                    update(connection);
+                }else{
+                    res.json({success:false,error:"Bobs has to be added"});
+                }
+
+            });
+        }else{
+            sql='UPDATE Bobs INNER JOIN Users ON Users.Bobs_ID=Bobs.ID ' +
+                'SET Bobs.Active=false ' +
+                'WHERE Users.ID=?';
+            items=[user_ID];
+            update(connection);
+
+        }
+    });
+
+
+    var update=function(connection){
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            items,
+            function (error, rows, fields) {
+                connection.release();
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
+                    res.json({success:true});
+                }
+            });
+    };
+
+
+
+};
+
+
 
 //custom
 var addUser=function(connection, user, bobs_ID, cb){
@@ -343,6 +396,23 @@ var editBob=function(connection, user, cb){
         });
 };
 
+var bobExist=function(user_ID, connection, cb){
+    var sql='SELECT (Bobs.ID IS NOT NULL) AS Exist FROM Bobs INNER JOIN Users ON Users.Bobs_ID=Bobs.ID ' +
+        'WHERE Users.ID=?';
+    connection.query({
+            sql: sql,
+            timeout: 40000 // 40s
+        },
+        [user_ID],
+        function (error, results, fields) {
+            if (error){
+                cb(error);
+            } else{
+                cb(results[0].Exist);
+            }
+        }
+    );
+};
 
 module.exports = (function(){
 
@@ -355,7 +425,8 @@ module.exports = (function(){
         postUser:postUser,
         putUser:putUser,
         getLocation:getLocation,
-        postLocation:postLocation
+        postLocation:postLocation,
+        putChange:putChange
     };
 
     return publicAPI;

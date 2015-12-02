@@ -62,4 +62,29 @@ router.get('/', access, controller.getTrips);
  */
 router.get('/current', access, controller.getCurrentTrip);
 
+/**
+ * @api {post} /api/trips/ POST statuses
+ * @apiVersion 0.0.1
+ * @apiName posttrips
+ * @apiGroup Trips
+ * @apiDescription Post trip
+ *
+ * @apiParam {Integer} Bobs_ID table: Bobs
+ * @apiParam {Integer} Destinations_ID table: Destinations
+ * @apiParam {String} Friends table: Friends, example: {id1,id2,id3,id4}
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 OK
+ *     {
+ *       success: true
+ *     }
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       success: false
+ *     }
+ */
+router.post('/', access, controller.postTrip);
+
 module.exports = router;
