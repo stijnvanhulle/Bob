@@ -15,7 +15,23 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
+                    assert.notEqual(item.ID,null,'No ID');
                     assert.equal(item.error, null,'Login failed');
+                    assert.equal(res.statusCode, 200,'Success request');
+                    done()
+                });
+        });
+    });
+
+    describe('getLocation', function () {
+        it('should be logged in', login(server,options.email,options.password));
+        it("should return a 200 response", function (done) {
+            server
+                .get('/api/user/location')
+                .end(function(err, res){
+                    if (err) return done(err);
+                    var item=res.body;
+                    assert.equal(item.error, null,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });
@@ -25,17 +41,18 @@ var test= function(server,options) {
     describe('postLocation', function () {
         xit('should be logged in', login(server,options.email,options.password));
         xit("should return a 200 response", function (done) {
-            var location= {
+            var obj= {
                 Latitude:'50.8888',
                 Longitude: '15.11'
             };
             server
                 .post('/api/user/location')
-                .send({location: location})
+                .send(obj)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
                     assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });
@@ -46,18 +63,18 @@ var test= function(server,options) {
         xit('should be logged in', login(server,options.email,options.password));
         xit("should return a 200 response", function (done) {
             var user= {
-                Firstname:'Stijn',
-                Lastname: 'Van Hulle',
-                Email:'stijn.vanhulle@outlook.com',
-                Cellphone:'534234',
+                Firstname: Chance.first(),
+                Lastname: Chance.last(),
+                Email:chance.email({domain: 'example.com'}),
+                Cellphone:chance.phone({ country: 'be' }),
                 Password:'test',
                 IsBob:false
             };
             var bob= {
-                Firstname:'Stijn',
-                Lastname: 'Van Hulle',
-                Email:'stijn.vanhulle@outlook.com',
-                Cellphone:'534234',
+                Firstname: Chance.first(),
+                Lastname: Chance.last(),
+                Email:chance.email({domain: 'example.com'}),
+                Cellphone:chance.phone({ country: 'be' }),
                 Password:'test',
                 IsBob:true,
                 PricePerKm:2.3,
@@ -67,11 +84,12 @@ var test= function(server,options) {
             };
             server
                 .post('/api/user/register')
-                .send({user: bob})
+                .send(bob)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
                     assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });
@@ -83,20 +101,20 @@ var test= function(server,options) {
         xit("should return a 200 response", function (done) {
             var user= {
                 Users_ID:23,
-                Firstname:'Stijn',
-                Lastname: 'Van Hulle',
-                Email:'stijn.vanhulle@outlook.com',
-                Cellphone:'534234',
+                Firstname: Chance.first(),
+                Lastname: Chance.last(),
+                Email:chance.email({domain: 'example.com'}),
+                Cellphone:chance.phone({ country: 'be' }),
                 Password:'test',
                 IsBob:false
             };
             var bob= {
                 Users_ID:23,
                 Bobs_ID:6,
-                Firstname:'TETTEN',
-                Lastname: 'Van Hulle',
-                Email:'stijn.vanhulle@outlook.com',
-                Cellphone:'534234',
+                Firstname: Chance.first(),
+                Lastname: Chance.last(),
+                Email:chance.email({domain: 'example.com'}),
+                Cellphone:chance.phone({ country: 'be' }),
                 Password:'test',
                 IsBob:true,
                 PricePerKm:2.3,
@@ -106,11 +124,12 @@ var test= function(server,options) {
             };
             server
                 .put('/api/user/edit')
-                .send({user: bob})
+                .send(bob)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
                     assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });

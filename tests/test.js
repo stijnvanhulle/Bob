@@ -12,8 +12,19 @@ var options={
     password:"test"
 };
 //tests
-var userTest    =require('./userTest');
-var authTest    =require('./authTest');
+var authTest         = require('./authTest');
+var userTest         = require('./userTest');
+var autotypesTest    = require('./autotypesTest');
+var citiesTest       = require('./citiesTest');
+var countriesTest    = require('./countriesTest');
+var bobsTest         = require('./bobsTest');
+var chatroomsTest    = require('./chatroomsTest');
+var destinationsTest = require('./destinationsTest');
+var friendsTest      = require('./friendsTest');
+var partiesTest      = require('./partiesTest');
+var statusesTest     = require('./statusesTest');
+var tripsTest        = require('./tripsTest');
+var usersTest        = require('./usersTest');
 
 
 describe('Access server:', function () {
@@ -29,4 +40,39 @@ describe('Authtentication testing:',function(){
 });
 describe('User testing:',function(){
     userTest(server,options);
+});
+
+describe('Autotype testing:',function(){
+    autotypesTest(server,options);
+});
+
+describe('Cities testing:',function(){
+    citiesTest(server,options);
+});
+describe('Countries testing:',function(){
+    countriesTest(server,options);
+});
+describe('Bobs testing:',function(){
+    bobsTest(server,options);
+});
+describe('Chatrooms testing:',function(){
+    chatroomsTest(server,options);
+});
+describe('Destinations testing:',function(){
+    destinationsTest(server,options);
+});
+describe('Friends testing:',function(){
+    friendsTest(server,options);
+});
+describe('Parties testing:',function(){
+    partiesTest(server,options);
+});
+describe('Statuses testing:',function(){
+    statusesTest(server,options);
+});
+describe('Trips testing:',function(){
+    tripsTest(server,options);
+});
+describe('Users testing:',function(){
+    usersTest(server,options);
 });

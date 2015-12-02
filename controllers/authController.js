@@ -4,6 +4,9 @@
 var passport        = require('passport');
 var pool            = require('../libs/mysql');
 
+var commit          = require('./libs/commit');
+var parser          = require('./libs/parser');
+
 
 var local=function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {

@@ -1,9 +1,6 @@
 var express         = require('express');
-var path            = require("path");
-var passport        = require('passport');
 var app             = express();
 var router          = express.Router();
-var fs              = require('fs');
 var bodyParser      = require('body-parser');
 var jsonParser      = bodyParser.json({ type: 'application/json' } );
 var controller      = require('../../controllers/userController');

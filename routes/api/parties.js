@@ -1,15 +1,10 @@
 var express         = require('express');
-var mysql           = require('mysql');
-var path            = require("path");
-var passport        = require('passport');
-var geolib          = require('geolib');
 var app             = express();
 var router          = express.Router();
-var fs              = require('fs');
-var passport        = require('passport');
 var bodyParser      = require('body-parser');
 var jsonParser      = bodyParser.json({ type: 'application/json' } );
-var pool            = require('../../libs/mysql');
+var controller      = require('../../controllers/partiesController');
+var access          = require('../../controllers/authController').access;
 
 /**
  * @api {get} /api/parties/ GET parties
@@ -33,23 +28,7 @@ var pool            = require('../../libs/mysql');
  *       success: false
  *     }
  */
-router.get('/', function(req, res, next) {
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'SELECT * FROM Parties',
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results);
-                }
-            }
-        );
-    });
-});
+router.get('/', access, controller.getParties);
 
 /**
  * @api {post} /api/parties/area POST parties in the area
@@ -77,44 +56,7 @@ router.get('/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.post('/area',jsonParser, function(req, res, next) {
-
-
-
-    var location=JSON.parse(req.body.Location);
-    //var location=req.body.Location;
-    //var distance=JSON.parse(req.body.Distance);
-    var distance=req.body.Distance;
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'SELECT * FROM Parties',
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
-                    var items=[];
-                    for(var i=0;i<results.length;i++){
-                        var distanceInMeters=geolib.getDistance(
-                            location,
-                            JSON.parse(results[0].Location)
-                        );
-
-                        console.log(distanceInMeters);
-                        if(distanceInMeters<=distance){
-                            items.push(results[i]);
-                        }
-                    }
-
-                    res.json(items);
-                }
-            }
-        );
-    });
-});
+router.post('/area',jsonParser, controller.getPartiesInArea);
 
 /**
  * @api {post} /api/parties/ POST party
@@ -142,32 +84,6 @@ router.post('/area',jsonParser, function(req, res, next) {
  *       success: false
  *     }
  */
-router.post('/', function(req, res, next) {
-    var party=JSON.parse(req.body.Party);
-
-    if(req.isAuthenticated()){
-        var id= req.user[0].ID;
-        pool.getConnection(function(error, connection) {
-            connection.query({
-                    sql: 'INSERT INTO Parties(Name,Organisator, Amount, FacebookEventID, Cities_ID, Location) ' +
-                    'VALUES(?,?,?,?,?) ',
-                    timeout: 40000 // 40s
-                },
-                [party.Name, party.Organisator, party.Amount, party.FacebookEventID, party.Cities_ID, party.Location],
-                function (error, results, fields) {
-                    connection.release();
-                    if (error){
-                        res.json({success:false});
-                    } else{
-                        res.json({success:true});
-                    }
-                }
-            );
-        });
-    }else{
-        res.json({success:false, error:'Not authenticated'});
-    }
-
-});
+router.post('/', access, controller.postParty);
 
 module.exports = router;

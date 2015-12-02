@@ -1,14 +1,10 @@
 var express         = require('express');
-var mysql           = require('mysql');
-var path            = require("path");
-var passport        = require('passport');
 var app             = express();
 var router          = express.Router();
-var fs              = require('fs');
-var passport        = require('passport');
 var bodyParser      = require('body-parser');
 var jsonParser      = bodyParser.json({ type: 'application/json' } );
-var pool            = require('../../libs/mysql');
+var controller      = require('../../controllers/tripsController');
+var access          = require('../../controllers/authController').access;
 /**
  * @api {get} /api/trips GET trips[]
  * @apiVersion 0.0.1
@@ -35,43 +31,8 @@ var pool            = require('../../libs/mysql');
  *       success: false
  *     }
  */
-router.get('/', function(req, res, next) {
-    var users_ID= req.user[0].ID;
-    if(req.isAuthenticated()){
-        var sql="";
+router.get('/', access, controller.getTrips);
 
-        if(id!=null){
-            sql='SELECT Trips.ID as Trips_ID, Trips.CurrenLocation as Trips_CurrentLocation, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
-                'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID  '+
-                'INNER JOIN Users ON Users.ID= a.Users_ID '+
-                'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
-                'INNER JOIN Cities On Cities.ID=Destinations.Cities_ID '+
-                'WHERE a.Users_ID=?';
-        }
-
-
-        pool.getConnection(function(error, connection) {
-            connection.query({
-                    sql: sql,
-                    timeout: 40000 // 40s
-                },
-                [users_ID],
-                function (error, results, fields) {
-                    connection.release();
-                    if (error){
-                        res.json({success:false});
-                    } else{
-                        res.json(results);
-                    }
-                }
-            );
-        });
-    }else{
-        res.json({success:false, error:'Not authenticated'});
-    }
-
-
-});
 
 /**
  * @api {get} /api/trips/current GET CurrentTrip
@@ -99,40 +60,6 @@ router.get('/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.get('/current', function(req, res, next) {
-    var id=1;
-    var sql="";
-
-    if(id!=null){
-        sql='SELECT Trips.ID as Trips_ID, Trips.CurrenLocation as Trips_CurrentLocation, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
-            'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
-            'INNER JOIN Users ON Users.ID= a.Users_ID '+
-            'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
-            'INNER JOIN Cities On Cities.ID=Destinations.Cities_ID '+
-            'WHERE a.Users_ID=? '+
-            'ORDER BY Trips.Added DESC '+
-            'LIMIT 1';
-    }
-
-
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: sql,
-                timeout: 40000 // 40s
-            },
-            [id],
-            function (error, results, fields) {
-                connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results[0]);
-                }
-            }
-        );
-    });
-
-
-});
+router.get('/current', access, controller.getCurrentTrip);
 
 module.exports = router;

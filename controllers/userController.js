@@ -6,12 +6,16 @@ var pool            = require('../libs/mysql');
 var md5             = require('md5');
 var async           = require('async');
 
+var commit          = require('./libs/commit');
+var parser          = require('./libs/parser');
+
 var getUser=function(req,res){
     var user_ID= req.user[0].ID;
+    var sql='SELECT ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users ' +
+        'WHERE ID=?';
     pool.getConnection(function(error, connection) {
         connection.query({
-                sql: 'SELECT ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users ' +
-                'WHERE ID=?',
+                sql: sql,
                 timeout: 40000 // 40s
             },
             [user_ID],
@@ -38,6 +42,8 @@ var getProfile=function(req,res){
             'INNER JOIN BobsType ON BobsType.ID=Bobs.BobsType_ID '+
             'INNER JOIN Autotype ON Autotype.ID=Bobs.Autotype_ID ' +
             'WHERE Users.ID=?';
+    }else{
+        res.json({success:false});
     }
 
     pool.getConnection(function(error, connection) {
@@ -103,13 +109,7 @@ var getPointsAmount=function(req,res){
 
 
 var postUser=function(req,res) {
-    var user;
-    try {
-        user = JSON.parse(req.body.user);
-    } catch (e) {
-        user = req.body.user;
-    }
-
+    var obj= parser(req.body);
 
     pool.getConnection(function (error, connection) {
         connection.beginTransaction(function (err) {
@@ -118,10 +118,10 @@ var postUser=function(req,res) {
                 res.json({success: false, error: error.message});
             }
 
-            if (user.IsBob == true || register.Bobs_ID!=null) {
+            if (obj.IsBob == true || register.Bobs_ID!=null) {
                 async.waterfall([
                     function (cb) {
-                        addBob(connection, user, function (err, id) {
+                        addBob(connection, obj, function (err, id) {
                             if (err) {
                                 cb(err, null);
                             } else {
@@ -130,7 +130,7 @@ var postUser=function(req,res) {
                         });
                     },
                     function (id, cb) {
-                        addUser(connection, user, id, function (err) {
+                        addUser(connection, obj, id, function (err) {
                             if (err) {
                                 cb(err, false);
                             } else {
@@ -144,7 +144,7 @@ var postUser=function(req,res) {
                 });
 
             } else {
-                addUser(connection, user, null, function (err) {
+                addUser(connection, obj, null, function (err) {
                     commit(connection, err, res);
                 });
 
@@ -157,12 +157,7 @@ var postUser=function(req,res) {
 };
 
 var putUser=function(req,res){
-    var user;
-    try {
-        user = JSON.parse(req.body.user);
-    } catch (e) {
-        user = req.body.user;
-    }
+    var obj= parser(req.body);
 
     pool.getConnection(function (error, connection) {
         connection.beginTransaction(function (err) {
@@ -171,10 +166,10 @@ var putUser=function(req,res){
                 res.json({success: false, error: error.message});
             }
 
-            if (user.IsBob == true || register.Bobs_ID!=null) {
+            if (obj.IsBob == true || register.Bobs_ID!=null) {
                 async.waterfall([
                     function (cb) {
-                        editBob(connection, user, function (err) {
+                        editBob(connection, obj, function (err) {
                             if (err) {
                                 cb(err, null);
                             } else {
@@ -183,7 +178,7 @@ var putUser=function(req,res){
                         });
                     },
                     function (cb) {
-                        editUser(connection, user, function (err) {
+                        editUser(connection, obj, function (err) {
                             if (err) {
                                 cb(err, false);
                             } else {
@@ -197,7 +192,7 @@ var putUser=function(req,res){
                 });
 
             } else {
-                editUser(connection, user, function (err) {
+                editUser(connection, obj, function (err) {
                     commit(connection, err, res);
                 });
 
@@ -210,12 +205,13 @@ var putUser=function(req,res){
 
 var getLocation=function(req,res){
     var user_ID= req.user[0].ID;
+    var sql='SELECT * FROM Users_Locations WHERE ' +
+        'Users_ID=? ' +
+        'ORDER BY Added DESC LIMIT 1';
 
     pool.getConnection(function(error, connection) {
         connection.query({
-                sql: 'SELECT * FROM Users_Locations WHERE ' +
-                'Users_ID=? ' +
-                'ORDER BY Added DESC LIMIT 1',
+                sql: sql,
                 timeout: 40000 // 40s
             },
             [user_ID],
@@ -235,19 +231,14 @@ var getLocation=function(req,res){
 
 var postLocation=function(req,res){
     var user_ID= req.user[0].ID;
-    var location;
+    var sql='INSERT INTO Users_Locations(Users_ID,Location) VALUES(?,?)';
+    var obj= parser(req.body);
 
-    try {
-        location = JSON.parse(req.body.location);
-    } catch (e) {
-        location = req.body.location;
-    }
-
-    var currentLocation={'latitude':location.Latitude,'longitude': location.Longitude};
+    var currentLocation={'latitude':obj.Latitude,'longitude': obj.Longitude};
 
     pool.getConnection(function(error, connection) {
         connection.query({
-                sql: 'INSERT INTO Users_Locations(Users_ID,Location) VALUES(?,?)',
+                sql: sql,
                 timeout: 40000 // 40s
             },
             [user_ID,JSON.stringify(currentLocation)],
@@ -352,28 +343,6 @@ var editBob=function(connection, user, cb){
         });
 };
 
-var commit=function(connection, err, res){
-    if(err){
-        return connection.rollback(function() {
-            res.json({success:false,error:err.message});
-        });
-    }else{
-        connection.commit(function(err) {
-            if (err) {
-                return connection.rollback(function() {
-                    connection.release();
-                    console.log('unsuccessfull!');
-                    res.json({success:false,error:err.message});
-                });
-            }else{
-                connection.release();
-                console.log('success!');
-                res.json({success:true});
-            }
-
-        });
-    }
-};
 
 module.exports = (function(){
 

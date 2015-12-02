@@ -1,14 +1,10 @@
 var express         = require('express');
-var mysql           = require('mysql');
-var path            = require("path");
-var passport        = require('passport');
 var app             = express();
 var router          = express.Router();
-var fs              = require('fs');
-var passport        = require('passport');
 var bodyParser      = require('body-parser');
 var jsonParser      = bodyParser.json({ type: 'application/json' } );
-var pool            = require('../../libs/mysql');
+var controller      = require('../../controllers/usersController');
+var access          = require('../../controllers/authController').access;
 
 
 /**
@@ -32,23 +28,8 @@ var pool            = require('../../libs/mysql');
  *       success: false
  *     }
  */
-router.get('/', function(req, res, next) {
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'SELECT ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users',
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results);
-                }
-            }
-        );
-    });
-});
+router.get('/', access, controller.getUsers);
+
 
 /**
  * @api {get} /api/users/online GET users online[]
@@ -71,22 +52,6 @@ router.get('/', function(req, res, next) {
  *       success: false
  *     }
  */
-router.get('/', function(req, res, next) {
-    pool.getConnection(function(error, connection) {
-        connection.query({
-                sql: 'SELECT Users,ID,Users.Firstname,Users.Lastname,Users.Email,Users.Online FROM Users',
-                timeout: 40000 // 40s
-            },
-            function (error, results, fields) {
-                connection.release();
-                if (error){
-                    res.json({success:false});
-                } else{
-                    res.json(results);
-                }
-            }
-        );
-    });
-});
+router.get('/online', access, controller.getUsersOnline);
 
 module.exports = router;

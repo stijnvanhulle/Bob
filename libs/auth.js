@@ -13,7 +13,6 @@ var FACEBOOK={
 
 function findByEmail(email,password, fn) {
     pool.getConnection(function(error, connection) {
-        if (error) throw error;
         var query;
 
         //TODO maken dat hij online toevoegt aan de db
@@ -26,7 +25,6 @@ function findByEmail(email,password, fn) {
                 },
                 [email, password],
                 function (error, rows, fields) {
-                    if (error) throw error;
                     var user= rows;
                     //console.log(user);
                     connection.release();
@@ -44,7 +42,6 @@ function findByEmail(email,password, fn) {
 }
 function findByFacebookID(id, fn) {
     pool.getConnection(function(error, connection) {
-        if (error) throw error;
         var query;
 
         query='SELECT ID, FirstName, LastName, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users WHERE FacebookID=?';
@@ -55,7 +52,6 @@ function findByFacebookID(id, fn) {
             },
             [id],
             function (error, rows, fields) {
-                if (error) throw error;
                 var user= rows;
                 //console.log(user);
                 connection.release();
