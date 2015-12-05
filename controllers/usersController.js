@@ -23,7 +23,37 @@ var getUsers=function(req,res){
                 if (error){
                     res.json({success:false});
                 } else{
-                    res.json(results);
+                    var data=[];
+                    for(var i=0;i<results.length;i++){
+                        var user;
+                        if(results[i].Users_ID==null){
+                            user=null;
+                        }else{
+                            user={
+                                ID: results[i].Users_ID,
+                                Firstname: results[i].Users_Firstname,
+                                Lastname: results[i].Users_Lastname,
+                                Email: results[i].Users_Email,
+                                Cellphone: results[i].Users_Cellphone,
+                                IsBob: results[i].IsBob
+                            };
+                        }
+                        var item={
+                            User:user,
+                            Bob:{
+                                ID: results[i].Bobs_ID,
+                                BobsType_ID: results[i].Bobs_BobsType_ID,
+                                LicensePlate: results[i].Bobs_LicensePlate,
+                                Added: results[i].Bobs_Added,
+                                Active: results[i].Bobs_Active,
+                                PricePerKm:results[i].Bobs_PricePerKm,
+                                Autotype_ID:results[i].Bobs_Autotype_ID
+                            },
+                            Accepted: results[i].Accepted
+                        };
+                        data.push(item);
+                    }
+                    res.json(data);
                 }
             }
         );
@@ -45,7 +75,37 @@ var getUsersOnline=function(req,res){
                 if (error){
                     res.json({success:false});
                 } else{
-                    res.json(results);
+                    var data=[];
+                    for(var i=0;i<results.length;i++){
+                        var user;
+                        if(results[i].Users_ID==null){
+                            user=null;
+                        }else{
+                            user={
+                                ID: results[i].Users_ID,
+                                Firstname: results[i].Users_Firstname,
+                                Lastname: results[i].Users_Lastname,
+                                Email: results[i].Users_Email,
+                                Cellphone: results[i].Users_Cellphone,
+                                IsBob: results[i].IsBob
+                            };
+                        }
+                        var item={
+                            User:user,
+                            Bob:{
+                                ID: results[i].Bobs_ID,
+                                BobsType_ID: results[i].Bobs_BobsType_ID,
+                                LicensePlate: results[i].Bobs_LicensePlate,
+                                Added: results[i].Bobs_Added,
+                                Active: results[i].Bobs_Active,
+                                PricePerKm:results[i].Bobs_PricePerKm,
+                                Autotype_ID:results[i].Bobs_Autotype_ID
+                            },
+                            Accepted: results[i].Accepted
+                        };
+                        data.push(item);
+                    }
+                    res.json(data);
                 }
             }
         );

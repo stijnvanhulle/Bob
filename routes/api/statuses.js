@@ -29,7 +29,7 @@ router.get('/', access, controller.getStatuses);
  * @api {post} /api/statuses/ POST statuses
  * @apiVersion 0.0.1
  * @apiName /
- * @apiGroup Autotype
+ * @apiGroup Statuses
  * @apiDescription Post autotype
  *
  * @apiParam {String} Name

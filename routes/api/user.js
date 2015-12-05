@@ -124,7 +124,7 @@ router.get('/points/amount', access, controller.getPointsAmount);
  *       success: false
  *     }
  */
-router.post('/register',jsonParser, access,controller.postUser);
+router.post('/register',jsonParser,controller.postUser);
 
 /**
  * @api {put} /api/user/edit PUT Edit

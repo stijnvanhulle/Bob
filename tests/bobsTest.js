@@ -16,8 +16,8 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].Bobs_ID,null,'No ID');
-                    assert.equal(item[0].IsBob,true,'No bob');
+                    assert.notEqual(item[0].Bob.ID,null,'No ID');
+                    assert.equal(item[0].User.IsBob,true,'No bob');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
@@ -25,11 +25,29 @@ var test= function(server,options) {
         });
     });
 
-    //todo: find bob
-
-    //todo: online bobs
-
-    //todo: post find bobs
+    describe('findBobs', function () {
+        it('should be logged in', login(server,options.email,options.password));
+        it("should return a 200 response", function (done) {
+            var obj= {
+                Rating:null,
+                MinDate:"",
+                BobsType_ID: 1,
+                Location:JSON.stringify({latitude:chance.latitude({min: 50.8010, max: 50.8110}),longitude:chance.latitude({min: 3.209, max: 3.210})}),
+                MaxDistance:2000
+            };
+            server
+                .post('/api/bobs/find')
+                .send(obj)
+                .end(function(err, res){
+                    if (err) return done(err);
+                    var item=res.body;
+                    assert.notEqual(item.ID,null,'No ID');
+                    assert.equal(item.error, null,'Login failed');
+                    assert.equal(res.statusCode, 200,'Success request');
+                    done()
+                });
+        });
+    });
 
 
 };

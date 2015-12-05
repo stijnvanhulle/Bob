@@ -157,6 +157,8 @@ var test= function(server,options) {
                 });
         });
     });
+
+    //todo: points
 };
 
 module.exports=function(server,options) {

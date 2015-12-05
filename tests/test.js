@@ -52,7 +52,7 @@ xdescribe('Cities testing:',function(){
 xdescribe('Countries testing:',function(){
     countriesTest(server,options);
 });
-xdescribe('Bobs testing:',function(){
+describe('Bobs testing:',function(){
     bobsTest(server,options);
 });
 xdescribe('Chatrooms testing:',function(){
@@ -64,15 +64,15 @@ describe('Destinations testing:',function(){
 xdescribe('Friends testing:',function(){
     friendsTest(server,options);
 });
-describe('Parties testing:',function(){
+xdescribe('Parties testing:',function(){
     partiesTest(server,options);
 });
 xdescribe('Statuses testing:',function(){
     statusesTest(server,options);
 });
-describe('Trips testing:',function(){
+xdescribe('Trips testing:',function(){
     tripsTest(server,options);
 });
-describe('Users testing:',function(){
+xdescribe('Users testing:',function(){
     usersTest(server,options);
 });

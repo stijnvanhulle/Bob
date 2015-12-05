@@ -63,7 +63,7 @@ router.get('/', access, controller.getTrips);
 router.get('/current', access, controller.getCurrentTrip);
 
 /**
- * @api {post} /api/trips/ POST statuses
+ * @api {post} /api/trips/ POST trip
  * @apiVersion 0.0.1
  * @apiName posttrips
  * @apiGroup Trips
@@ -87,4 +87,5 @@ router.get('/current', access, controller.getCurrentTrip);
  */
 router.post('/', access, controller.postTrip);
 
+router.post('/location', access, controller.postLocation);
 module.exports = router;

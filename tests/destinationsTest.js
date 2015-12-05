@@ -52,7 +52,6 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    console.log(item);
                     assert.equal(item.error, null,'Failed');
                     assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');

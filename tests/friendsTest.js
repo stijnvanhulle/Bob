@@ -16,7 +16,7 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].Users1_ID,null,'No ID');
+                    assert.notEqual(item[0].User1._ID,null,'No ID');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()

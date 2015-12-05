@@ -36,11 +36,12 @@ var getProfile=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT Users.ID as Users_ID, Firstname, Lastname, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob, '+
-            'Bobs.ID as Bobs_ID, Bobs.BobsType_ID As BobsType_ID, BobsType.Name As BobsType_Name, Bobs.Autotype_ID as Autotype_ID, Autotype.Name as Autotype_Name, Bobs.LicensePlate FROM Users '+
+        sql='SELECT Users.ID as Users_ID, Users.Firstname as Users_Firstname, Users.Lastname as Users_Lastname, Users.Email as Users_Email, Users.Cellphone as Users_Cellphone, (Bobs_ID IS NOT NULL) AS IsBob, '+
+            'Bobs.ID as Bobs_ID, Bobs.BobsType_ID as Bobs_BobsType_ID, Bobs.Autotype_ID as Bobs_Autotype_ID, Bobs.PricePerKm as Bobs_PricePerKm, Bobs.LicensePlate as Bobs_LicensePlate, Bobs.Added as Bobs_Added, Bobs.Active as Bobs_Active, ' +
+            'Bobs.Autotype_ID as Autotype_ID, Autotypes.Name as Autotype_Name, Bobs.LicensePlate FROM Users '+
             'INNER JOIN Bobs ON Users.Bobs_ID=Bobs.ID '+
             'INNER JOIN BobsType ON BobsType.ID=Bobs.BobsType_ID '+
-            'INNER JOIN Autotype ON Autotype.ID=Bobs.Autotype_ID ' +
+            'INNER JOIN Autotypes ON Autotypes.ID=Bobs.Autotype_ID ' +
             'WHERE Users.ID=?';
     }else{
         res.json({success:false});
@@ -57,7 +58,37 @@ var getProfile=function(req,res){
                 if (error){
                     res.json({success:false});
                 } else{
-                    res.json(results[0]);
+                    var i=0;
+                    var user;
+                    if(results[i].Users_ID==null){
+                        user=null;
+                    }else{
+                        user={
+                            ID: results[i].Users_ID,
+                            Firstname: results[i].Users_Firstname,
+                            Lastname: results[i].Users_Lastname,
+                            Email: results[i].Users_Email,
+                            Cellphone: results[i].Users_Cellphone,
+                            IsBob: results[i].IsBob
+                        };
+                    }
+                    var item={
+                        User:user,
+                        Bob:{
+                            ID: results[i].Bob_ID,
+                            BobsType_ID: results[i].Bobs_BobsType_ID,
+                            LicensePlate: results[i].Bobs_LicensePlate,
+                            Added: results[i].Bobs_Added,
+                            Active: results[i].Bobs_Active,
+                            PricePerKm:results[i].Bobs_PricePerKm,
+                            Autotype_ID:results[i].Bobs_Autotype_ID
+                        },
+                        Autotype: {
+                            ID: results[i].Autotype_ID,
+                            Name: results[i].Autotype_Name
+                        }
+                    };
+                    res.json(item);
                 }
             }
         );
@@ -65,7 +96,7 @@ var getProfile=function(req,res){
 };
 
 var getPoints=function(req,res){
-    var sql='SELECT PointsDescription_ID,PointsDescription.Description as PointsDescription_Name,PointsDescription.Points as Points, Added FROM Bob.Users_PointsDescription '+
+    var sql='SELECT PointsDescription_ID,PointsDescription.Description as PointsDescription_Description,PointsDescription.Points as Points, Added FROM Bob.Users_PointsDescription '+
         'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID';
 
 
@@ -79,7 +110,19 @@ var getPoints=function(req,res){
                 if (error){
                     res.json({success:false});
                 } else{
-                    res.json(results);
+                    var data=[];
+                    for(var i=0;i<results.length;i++){
+                        var item={
+                            PointsDescription:{
+                                ID: results[i].PointsDescription_ID,
+                                Description: results[i].PointsDescription_Description,
+                                Points:results[i].Points
+                            },
+                            Added: results[i].Added
+                        };
+                        data.push(item);
+                    }
+                    res.json(data);
                 }
             }
         );
@@ -118,7 +161,7 @@ var postUser=function(req,res) {
                 res.json({success: false, error: err.message});
             }
 
-            if (obj.IsBob == true || register.Bobs_ID!=null) {
+            if (obj.IsBob == true || obj.Bobs_ID!=null) {
                 async.waterfall([
                     function (cb) {
                         addBob(connection, obj, function (err, id) {

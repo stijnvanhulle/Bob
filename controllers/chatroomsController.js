@@ -14,7 +14,7 @@ var getChatrooms=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT ID,Bobs_ID, Added FROM Bob.ChatRooms ' +
+        sql='SELECT * FROM Bob.ChatRooms ' +
             'WHERE Users_ID=? AND Active=1';
     }else{
         res.json({success:false});
@@ -76,10 +76,11 @@ var getChatroomByID=function(req,res){
     var sql="";
 
     if(id!=null){
-        sql='SELECT ChatComments.ID,ChatComments.ChatRooms_ID,ChatComments.Comment,ChatComments.Added, ChatComments.Users_ID, Users.Firstname as Users_Firstname, Users.Lastname as Users_Lastname, Users.Email as Users_Email, Users.Cellphone as Users_Cellphone FROM ChatComments '+
-            'INNER JOIN Users ON Users.ID= ChatComments.Users_ID ' +
-            'WHERE ChatComments.ChatRooms_ID=? ' +
-            'ORDER BY ChatComments.Added DESC';
+        sql='SELECT ChatRooms.ID as ChatRooms_ID, ChatRooms.Users_ID as ChatRooms_Users_ID,ChatRooms.Bobs_ID as ChatRooms_BobsID, ChatRooms.Added as ChatRooms_Added, ChatRooms.Active as ChatRooms_Active, ChatComments.ID,ChatComments.Comment as Comment,ChatComments.Added, ChatComments.Users_ID as FromUser_ID FROM ChatComments '+
+        'INNER JOIN Users ON Users.ID= ChatComments.Users_ID ' +
+        'INNER JOIN ChatRooms ON ChatRooms.ID=ChatComments.ChatRooms_ID ' +
+        'WHERE ChatComments.ChatRooms_ID=? ' +
+        'ORDER BY ChatComments.Added DESC';
     }else{
         res.json({success:false});
     }
@@ -93,10 +94,33 @@ var getChatroomByID=function(req,res){
             function (error, results, fields) {
                 connection.release();
                 if (error){
+                    console.log(error);
                     res.json({success:false});
                 } else{
-                    res.json(results[0]);
+                    var data={
+                            ChatRoom:{
+                                ID: results[0].ChatRooms_ID,
+                                Users_ID: results[0].ChatRooms_Users_ID,
+                                Bobs_ID: results[0].ChatRooms_Bobs_ID,
+                                Added: results[0].ChatRooms_Added,
+                                Active:  results[0].ChatRooms_Active
+                            }
+                    };
+                    var chatComments=[];
+                    for(var i=0;i<results.length;i++){
+                        var item= {
+                                ID: results[i].ID,
+                                Comment: results[i].Comment,
+                                Added: results[i].Added,
+                                FromUser_ID: results[i].FromUser_ID
+
+                        };
+                        chatComments.push(item);
+                    }
+                    data.ChatCommets=chatComments;
+                    res.json(data);
                 }
+
             }
         );
     });

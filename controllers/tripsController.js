@@ -9,6 +9,32 @@ var async           = require('async');
 var commit          = require('./libs/commit');
 var parser          = require('./libs/parser');
 
+//start
+//find bob
+
+//bent u zeker dat u deze bob wilt
+//JAAAA
+//add trip: users_ID, Bobs_ID, Destination_ID, Friends
+//add to Bobs_Parties: Users_ID, Party_ID, statuses_ID, Bobs_ID, Trips_ID
+//add every minute to Trips_Locations met bijhorende status: Trips_ID, Location, Added, Statuses_ID
+//NEEE
+//herzoek een nieuwe bob
+
+
+//maak chatroom aan
+//add comment to chatroom
+
+//opweg
+//add every minute to Trips_Locations met bijhorende status: Trips_ID, Location, Added, Statuses_ID:OPWEG
+
+//aangekomen
+//add every minute to Trips_Locations met bijhorende status: Trips_ID, Location, Added, Statuses_ID:AANGEKOMEN
+//update trips to active:0
+
+//add points to user
+//add rating to bobs-parties
+
+
 var getTrips=function(req,res){
     var user_ID= req.user[0].ID;
     var sql="";
@@ -100,6 +126,28 @@ var postTrip=function(req,res){
     });
 };
 
+var postLocation=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql='INSERT INTO Trips_Locations(Trips_ID,Location, Added) VALUES(?,?,?)';
+    var obj= parser(req.body);
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            [obj.Trips_ID,obj.Location, obj.Added],
+            function (error, rows, fields) {
+                connection.release();
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
+                    res.json({success:true});
+                }
+            });
+    });
+};
+
 
 //custom
 
@@ -111,7 +159,8 @@ module.exports = (function(){
     var publicAPI={
         getTrips:getTrips,
         getCurrentTrip:getCurrentTrip,
-        postTrip:postTrip
+        postTrip:postTrip,
+        postLocation:postLocation
 
     };
 
