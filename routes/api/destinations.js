@@ -68,5 +68,6 @@ router.get('/default', access,controller.getDefaultDestination);
  *     }
  */
 router.post('/', access, controller.postDestination);
+router.get('/:id', access, controller.getDestinationById);
 
 module.exports = router;

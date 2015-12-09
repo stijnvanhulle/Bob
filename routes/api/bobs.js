@@ -102,5 +102,6 @@ router.get('/online', access, controller.getBobsOnline);
  */
 router.post('/find', access, controller.postFindBobs);
 
+router.get('/:id', access, controller.getBobById);
 
 module.exports = router;

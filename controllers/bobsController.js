@@ -10,6 +10,7 @@ var geolib          = require('geolib');
 var commit          = require('./libs/commit');
 var parser          = require('./libs/parser');
 
+
 Array.prototype.contains = function(obj) {
     var i = this.length;
     while (i--) {
@@ -19,6 +20,8 @@ Array.prototype.contains = function(obj) {
     }
     return false;
 };
+
+
 
 var getBobs=function(req,res){
     pool.getConnection(function(error, connection) {
@@ -121,7 +124,60 @@ var getBobsOnline=function(req,res){
         );
     });
 };
-//todo: findbobs
+var getBobById=function(req,res){
+    var id = req.params.id;
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: 'SELECT Users.ID as Users_ID, Firstname as Users_Firstname,Users.Added as Users_Added, Users.FacebookID as Users_FacebookID,Users.Lastname as Users_Lastname, Users.Email as Users_Email, Users.Cellphone as Users_Cellphone, Users.Online as Users_Online,' +
+                '(Bobs.ID IS NOT NULL) AS IsBob, ' +
+                'Bobs.ID as Bobs_ID, Bobs.BobsType_ID as Bobs_BobsType_ID, Bobs.Autotype_ID as Bobs_Autotype_ID, Bobs.PricePerKm as Bobs_PricePerKm, Bobs.LicensePlate as Bobs_LicensePlate, Bobs.Added as Bobs_added, Bobs.Active as Bobs_Active FROM Users ' +
+                'RIGHT JOIN Bobs ON Users.Bobs_ID=Bobs.ID ' +
+                'WHERE Bobs.ID=?',
+                timeout: 40000 // 40s
+            },
+            [id],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false});
+                } else{
+                    var data=[];
+                    for(var i=0;i<results.length;i++){
+                        var user;
+                        if(results[i].Users_ID==null){
+                            user=null;
+                        }else{
+                            user={
+                                ID: results[i].Users_ID,
+                                Firstname: results[i].Users_Firstname,
+                                Lastname: results[i].Users_Lastname,
+                                Email: results[i].Users_Email,
+                                Cellphone: results[i].Users_Cellphone,
+                                IsBob: results[i].IsBob
+                            };
+                        }
+                        var item={
+                            User:user,
+                            Bob:{
+                                ID: results[i].Bobs_ID,
+                                BobsType_ID: results[i].Bobs_BobsType_ID,
+                                LicensePlate: results[i].Bobs_LicensePlate,
+                                Added: results[i].Bobs_Added,
+                                Active: results[i].Bobs_Active,
+                                PricePerKm:results[i].Bobs_PricePerKm,
+                                Autotype_ID:results[i].Bobs_Autotype_ID
+                            },
+                            Accepted: results[i].Accepted
+                        };
+                        data.push(item);
+                    }
+                    res.json(data[0]);
+                }
+            }
+        );
+    });
+};
+
 var postFindBobs=function(req,res){
     var user_ID= req.user[0].ID;
     var sql='';
@@ -230,13 +286,73 @@ var getBobsNearby=function(connection,location, maxDistance,date, cb){
         });
 };
 
+
+var postBobs_Parties=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql='';
+    var obj= parser(req.body);
+
+    var users_ID=obj.Users_ID;
+    var party_ID=obj.Party_ID;
+    var statuses_ID=obj.Statuses_ID;
+    var bobs_ID=obj.Bobs_ID;
+    var trips_ID=obj.Trips_ID;
+
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: '',
+                timeout: 40000 // 40s
+            },
+            [users_ID,party_ID,statuses_ID,bobs_ID,trips_ID],
+            function (error, results, fields) {
+                connection.release();
+                if(!error){
+                    res.json(results[0]);
+                }else{
+                    res.json({success:false});
+                }
+            });
+
+    });
+};
+
+var updateBobs_Parties=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql='';
+    var obj= parser(req.body);
+
+    var rating= obj.Rating;
+
+
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: '',
+                timeout: 40000 // 40s
+            },
+            [rating],
+            function (error, results, fields) {
+                connection.release();
+                if(!error){
+                    res.json(results[0]);
+                }else{
+                    res.json({success:false});
+                }
+            });
+
+    });
+};
+
 module.exports = (function(){
 
     //public api
     var publicAPI={
         getBobs:getBobs,
         getBobsOnline:getBobsOnline,
-        postFindBobs:postFindBobs
+        postFindBobs:postFindBobs,
+        getBobById:getBobById,
+        updateBobs_Parties:updateBobs_Parties
     };
 
     return publicAPI;

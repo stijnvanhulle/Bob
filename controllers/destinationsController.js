@@ -31,6 +31,31 @@ var getDestinations=function(req,res){
         );
     });
 };
+
+var getDestinationById=function(req,res){
+    var user_ID= req.user[0].ID;
+    var id= req.params.id;
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: "SELECT Users_Destinations.Users_ID,Users_Destinations.Destinations_ID,Users_Destinations.Default,Users_Destinations.Added,Users_Destinations.Name, Cities_ID, Location FROM Users_Destinations INNER JOIN Destinations " +
+                "ON Destinations.ID=Users_Destinations.Destinations_ID " +
+                "WHERE Users_ID=? AND Destinations.ID=?",
+                timeout: 40000 // 40s
+            },
+            [user_ID, id],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false});
+                } else{
+                    res.json(results[0]);
+                }
+            }
+        );
+    });
+};
+
 var getDefaultDestination=function(req,res){
     var user_ID= req.user[0].ID;
     pool.getConnection(function(error, connection) {
@@ -151,7 +176,8 @@ module.exports = (function(){
     var publicAPI={
         getDestinations:getDestinations,
         getDefaultDestination:getDefaultDestination,
-        postDestination:postDestination
+        postDestination:postDestination,
+        getDestinationById:getDestinationById
     };
 
     return publicAPI;

@@ -12,19 +12,19 @@ var options={
     password:"test"
 };
 //tests
-var authTest         = require('./authTest');
-var userTest         = require('./userTest');
-var autotypesTest    = require('./autotypesTest');
-var citiesTest       = require('./citiesTest');
-var countriesTest    = require('./countriesTest');
-var bobsTest         = require('./bobsTest');
-var chatroomsTest    = require('./chatroomsTest');
-var destinationsTest = require('./destinationsTest');
-var friendsTest      = require('./friendsTest');
-var partiesTest      = require('./partiesTest');
-var statusesTest     = require('./statusesTest');
-var tripsTest        = require('./tripsTest');
-var usersTest        = require('./usersTest');
+var authTest         = require('./specs/authTest');
+var userTest         = require('./specs/userTest');
+var autotypesTest    = require('./specs/autotypesTest');
+var citiesTest       = require('./specs/citiesTest');
+var countriesTest    = require('./specs/countriesTest');
+var bobsTest         = require('./specs/bobsTest');
+var chatroomsTest    = require('./specs/chatroomsTest');
+var destinationsTest = require('./specs/destinationsTest');
+var friendsTest      = require('./specs/friendsTest');
+var partiesTest      = require('./specs/partiesTest');
+var statusesTest     = require('./specs/statusesTest');
+var tripsTest        = require('./specs/tripsTest');
+var usersTest        = require('./specs/usersTest');
 
 
 describe('Access server:', function () {

@@ -71,6 +71,42 @@ var postChatroom=function(req,res){
     });
 };
 
+var postChatComment=function(req,res){
+    var obj= parser(req.body);
+
+    var chatRooms_ID =parser(obj.ChatRooms_ID);
+    var comment= parser(obj.Comment);
+    //var users_ID= parser(obj.Users_ID);
+
+    var user_ID= req.user[0].ID;
+    var sql="";
+
+    if(user_ID!=null){
+        sql='INSERT INTO ChatComments(ChatRooms_ID,Comment, Users_ID) ' +
+            'VALUES(?,?,?)';
+    }else{
+        res.json({success:false});
+    }
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            [chatRooms_ID,comment,user_ID],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false});
+                } else{
+                    res.json({success:true});
+                }
+            }
+        );
+    });
+};
+
+
 var getChatroomByID=function(req,res){
     var id=req.params.id;
     var sql="";
@@ -117,7 +153,7 @@ var getChatroomByID=function(req,res){
                         };
                         chatComments.push(item);
                     }
-                    data.ChatCommets=chatComments;
+                    data.ChatComments=chatComments;
                     res.json(data);
                 }
 
@@ -132,7 +168,8 @@ module.exports = (function(){
     var publicAPI={
         getChatrooms:getChatrooms,
         postChatroom:postChatroom,
-        getChatroomByID:getChatroomByID
+        getChatroomByID:getChatroomByID,
+        postChatComment:postChatComment
     };
 
     return publicAPI;

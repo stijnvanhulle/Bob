@@ -75,4 +75,7 @@ router.post('/',access,controller.postChatroom);
  */
 router.get('/:id', access, controller.getChatroomByID);
 
+router.post('/comment',access,controller.postChatComment);
+
+
 module.exports = router;

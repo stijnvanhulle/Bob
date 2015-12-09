@@ -2,7 +2,7 @@ var assert   = require("chai").assert;
 var http     = require("http");
 var Chance   = require('chance');
 var md5      = require('md5');
-var login    = require('./libs/login');
+var login    = require('./../libs/login');
 
 var chance   = new Chance();
 

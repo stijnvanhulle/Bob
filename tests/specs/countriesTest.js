@@ -2,17 +2,17 @@ var assert   = require("chai").assert;
 var http     = require("http");
 var Chance   = require('chance');
 var md5      = require('md5');
-var login    = require('./libs/login');
+var login    = require('./../libs/login');
 
 var chance   = new Chance();
 
 var test= function(server,options) {
 
-    describe('getCities', function () {
+    describe('getCountries', function () {
         it('should be logged in', login(server,options.email,options.password));
         it("should return a 200 response", function (done) {
             server
-                .get('/api/cities')
+                .get('/api/countries')
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
@@ -24,21 +24,20 @@ var test= function(server,options) {
         });
     });
 
-    describe('postCity', function () {
+    describe('postCountry', function () {
         xit('should be logged in', login(server,options.email,options.password));
         xit("should return a 200 response", function (done) {
             var obj= {
-                Name:'KORTRIJK',
-                PostCode:'8500',
-                Countries_ID:1
+                Name:chance.country({ full: true }),
+                ShortName:chance.country(),
+                EnglishName:chance.country({ full: true })
             };
             server
-                .post('/api/cities')
+                .post('/api/countries')
                 .send(obj)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    console.log(item);
                     assert.equal(item.error, null,'Failed');
                     assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
@@ -46,6 +45,7 @@ var test= function(server,options) {
                 });
         });
     });
+
 
 
 };

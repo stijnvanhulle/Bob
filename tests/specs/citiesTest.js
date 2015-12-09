@@ -2,22 +2,21 @@ var assert   = require("chai").assert;
 var http     = require("http");
 var Chance   = require('chance');
 var md5      = require('md5');
-var login    = require('./libs/login');
+var login    = require('./../libs/login');
 
 var chance   = new Chance();
 
 var test= function(server,options) {
 
-    describe('getBobs', function () {
+    describe('getCities', function () {
         it('should be logged in', login(server,options.email,options.password));
         it("should return a 200 response", function (done) {
             server
-                .get('/api/bobs')
+                .get('/api/cities')
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].Bob.ID,null,'No ID');
-                    assert.equal(item[0].User.IsBob,true,'No bob');
+                    assert.notEqual(item[0].ID,null,'No ID');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
@@ -25,24 +24,23 @@ var test= function(server,options) {
         });
     });
 
-    describe('findBobs', function () {
-        it('should be logged in', login(server,options.email,options.password));
-        it("should return a 200 response", function (done) {
+    describe('postCity', function () {
+        xit('should be logged in', login(server,options.email,options.password));
+        xit("should return a 200 response", function (done) {
             var obj= {
-                Rating:null,
-                MinDate:"",
-                BobsType_ID: 1,
-                Location:JSON.stringify({latitude:chance.latitude({min: 50.8010, max: 50.8110}),longitude:chance.latitude({min: 3.209, max: 3.210})}),
-                MaxDistance:2000
+                Name:'KORTRIJK',
+                PostCode:'8500',
+                Countries_ID:1
             };
             server
-                .post('/api/bobs/find')
+                .post('/api/cities')
                 .send(obj)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item.ID,null,'No ID');
-                    assert.equal(item.error, null,'Login failed');
+                    console.log(item);
+                    assert.equal(item.error, null,'Failed');
+                    assert.equal(item.success, true,'Failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });

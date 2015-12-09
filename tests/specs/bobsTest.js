@@ -2,36 +2,22 @@ var assert   = require("chai").assert;
 var http     = require("http");
 var Chance   = require('chance');
 var md5      = require('md5');
-var login    = require('./libs/login');
+var login    = require('./../libs/login');
 
 var chance   = new Chance();
 
 var test= function(server,options) {
 
-    describe('getTrips', function () {
+    describe('getBobs', function () {
         it('should be logged in', login(server,options.email,options.password));
         it("should return a 200 response", function (done) {
             server
-                .get('/api/trips')
+                .get('/api/bobs')
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.notEqual(item[0].Trips_ID,null,'No ID');
-                    assert.equal(item.error, null,'Login failed');
-                    assert.equal(res.statusCode, 200,'Success request');
-                    done()
-                });
-        });
-    });
-    describe('getCurrentTrip', function () {
-        it('should be logged in', login(server,options.email,options.password));
-        it("should return a 200 response", function (done) {
-            server
-                .get('/api/trips/current')
-                .end(function(err, res){
-                    if (err) return done(err);
-                    var item=res.body;
-                    assert.notEqual(item.Trips_ID,null,'No ID');
+                    assert.notEqual(item[0].Bob.ID,null,'No ID');
+                    assert.equal(item[0].User.IsBob,true,'No bob');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
@@ -39,33 +25,29 @@ var test= function(server,options) {
         });
     });
 
-    describe('postTrip', function () {
+    describe('findBobs', function () {
         it('should be logged in', login(server,options.email,options.password));
         it("should return a 200 response", function (done) {
-            var friends=[];
-            friends.push(1);
-            friends.push(2);
-
             var obj= {
-                Bobs_ID:1,
-                Destinations_ID:1,
-                Friends:JSON.stringify(friends)
+                Rating:null,
+                MinDate:"",
+                BobsType_ID: 1,
+                Location:JSON.stringify({latitude:chance.latitude({min: 50.8010, max: 50.8110}),longitude:chance.latitude({min: 3.209, max: 3.210})}),
+                MaxDistance:2000
             };
             server
-                .post('/api/trips')
+                .post('/api/bobs/find')
                 .send(obj)
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
-                    assert.equal(item.error, null,'Failed');
-                    assert.equal(item.success, true,'Failed');
+                    assert.notEqual(item.ID,null,'No ID');
+                    assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');
                     done()
                 });
         });
     });
-
-
 
 
 };

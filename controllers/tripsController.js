@@ -40,7 +40,7 @@ var getTrips=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT Trips.ID as Trips_ID, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
+        sql='SELECT Trips.ID as ID, Trips.Bobs_ID as Bobs_ID, a.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID  '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
             'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
@@ -62,6 +62,7 @@ var getTrips=function(req,res){
                 if (error){
                     res.json({success:false});
                 } else{
+
                     res.json(results);
                 }
             }
@@ -74,7 +75,7 @@ var getCurrentTrip=function(req,res){
     var sql="";
 
     if(user_ID!=null){
-        sql='SELECT Trips.ID as Trips_ID, Trips.Bobs_ID as Trips_Bobs_ID, a.Users_ID, a.Destinations_ID,Destinations.Location as Destinations_Location, Destinations.Cities_ID, Cities.Name as Cities_Name, a.Default, a.Added, a.Name FROM Trips '+
+        sql='SELECT Trips.ID as ID, Trips.Bobs_ID as Bobs_ID, a.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
             'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
@@ -149,6 +150,28 @@ var postLocation=function(req,res){
 };
 
 
+
+var putActive =function(req,rest){
+    var user_ID= req.user[0].ID;
+    var sql='';
+    var obj= parser(req.body);
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            [obj.Active],
+            function (error, rows, fields) {
+                connection.release();
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
+                    res.json({success:true});
+                }
+            });
+    });
+};
 //custom
 
 

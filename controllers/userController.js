@@ -96,8 +96,10 @@ var getProfile=function(req,res){
 };
 
 var getPoints=function(req,res){
+    var user_ID= req.user[0].ID;
     var sql='SELECT PointsDescription_ID,PointsDescription.Description as PointsDescription_Description,PointsDescription.Points as Points, Added FROM Bob.Users_PointsDescription '+
-        'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID';
+        'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID ' +
+        'WHERE Users_PointsDescription.Users_ID=?';
 
 
     pool.getConnection(function(error, connection) {
@@ -105,6 +107,7 @@ var getPoints=function(req,res){
                 sql: sql,
                 timeout: 40000 // 40s
             },
+            [user_ID],
             function (error, results, fields) {
                 connection.release();
                 if (error){
@@ -130,14 +133,17 @@ var getPoints=function(req,res){
 };
 
 var getPointsAmount=function(req,res){
+    var user_ID= req.user[0].ID;
     var sql='SELECT SUM(PointsDescription.Points) as Points FROM Bob.Users_PointsDescription '+
-        'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID';
+        'INNER JOIN PointsDescription ON PointsDescription.ID=Users_PointsDescription.PointsDescription_ID ' +
+        'WHERE Users_PointsDescription.Users_ID=?';
 
     pool.getConnection(function(error, connection) {
         connection.query({
                 sql: sql,
                 timeout: 40000 // 40s
             },
+            [user_ID],
             function (error, results, fields) {
                 connection.release();
                 if (error){
@@ -296,6 +302,29 @@ var postLocation=function(req,res){
     });
 };
 
+//Users_PointsDescription
+var postPointsDescription=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql='INSERT INTO Users_PointsDescription(Users_ID,PointsDescription_ID) VALUES(?,?)';
+    var obj= parser(req.body);
+
+    pool.getConnection(function(error, connection) {
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            [user_ID,obj.PointsDescription_ID],
+            function (error, rows, fields) {
+                connection.release();
+                if(error){
+                    res.json({success:false,error:error.message});
+                }else{
+                    res.json({success:true});
+                }
+            });
+    });
+};
+
 var putChange=function(req,res){
     var user_ID= req.user[0].ID;
     var sql;
@@ -399,9 +428,16 @@ var editUser=function(connection, user, cb){
     var sql;
     var items;
     if(user.bobs_ID==null){
-        sql='UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=? ' +
-            'WHERE Users.ID=?';
-        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID, user.Users_ID];
+        if(user.Password==null){
+            sql='UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?, FacebookID=? ' +
+                'WHERE Users.ID=?';
+            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.FacebookID, user.Users_ID];
+        }else{
+            sql='UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=? ' +
+                'WHERE Users.ID=?';
+            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID, user.Users_ID];
+        }
+
 
     }else{
         sql= 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?,FacebookID=?,Bobs_ID=? ' +
