@@ -88,4 +88,13 @@ router.get('/current', access, controller.getCurrentTrip);
 router.post('/', access, controller.postTrip);
 
 router.post('/location', access, controller.postLocation);
+
+router.post('/difference', access, controller.postDifference);
+
+router.put('/active', access, controller.putActive);
+router.post('rating', access, controller.addRating);
+
+router.get(':id', access, controller.getTripById);
+
+
 module.exports = router;

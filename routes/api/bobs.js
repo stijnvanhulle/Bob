@@ -101,7 +101,12 @@ router.get('/online', access, controller.getBobsOnline);
  *     }
  */
 router.post('/find', access, controller.postFindBobs);
+router.get('/types', access, controller.getBobTypes);
+router.put("/offer", access, controller.putOffer);
+router.get('/avg/:id', access, controller.getAverageFromBob);
 
 router.get('/:id', access, controller.getBobById);
+
+
 
 module.exports = router;

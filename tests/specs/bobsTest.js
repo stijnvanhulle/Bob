@@ -32,8 +32,8 @@ var test= function(server,options) {
                 Rating:null,
                 MinDate:"",
                 BobsType_ID: 1,
-                Location:JSON.stringify({latitude:chance.latitude({min: 50.8010, max: 50.8110}),longitude:chance.latitude({min: 3.209, max: 3.210})}),
-                MaxDistance:2000
+                Location:JSON.stringify({ Latitude : 51.177134640708495, Longitude : 3.2177382568767574 }),
+                MaxDistance:null
             };
             server
                 .post('/api/bobs/find')
@@ -41,6 +41,7 @@ var test= function(server,options) {
                 .end(function(err, res){
                     if (err) return done(err);
                     var item=res.body;
+                    console.log(item);
                     assert.notEqual(item.ID,null,'No ID');
                     assert.equal(item.error, null,'Login failed');
                     assert.equal(res.statusCode, 200,'Success request');

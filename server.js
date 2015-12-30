@@ -1,8 +1,11 @@
+var pool        = require('./libs/mysql');
+pool.createPool();
 var app         = require('./app');
 var server      = require('http').Server(app);
 var https       = require('https');
 var io          = require('socket.io')(server);
 var fs          = require('fs');
+
 
 var options={
     port:80,
@@ -15,6 +18,7 @@ var options={
      */
 };
 
+
 server.listen(options.port, function(){
     var address = server.address();
     if(address.address=="::"){
@@ -22,6 +26,17 @@ server.listen(options.port, function(){
     }
     console.log("Server listening on: http://%s/:%s",address.address, address.port);
     global.address="http://" + address.address + '/:'+ address.port;
+});
+
+server.on('close', function() {
+    io.emit('disconnect', true);
+    pool.endPool();
+    console.log(' Stopping server ...');
+    process.exit(1);
+});
+
+process.on('SIGINT', function() {
+    server.close();
 });
 
 /*
@@ -41,7 +56,6 @@ require('./libs/socket')(io,function(result){
         console.log("Server socket connected");
     }else{
         console.log("Server socket not connected");
-        process.exit(1);
     }
 });
 module.exports = server;

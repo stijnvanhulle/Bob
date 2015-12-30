@@ -26,5 +26,6 @@ var access          = require('../../controllers/authController').access;
  */
 
 router.get('/', access, controller.getFriends);
+router.post('/', access, controller.postFriend);
 
 module.exports = router;

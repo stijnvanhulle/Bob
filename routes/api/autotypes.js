@@ -25,7 +25,7 @@ var access          = require('../../controllers/authController').access;
  *       success: false
  *     }
  */
-router.get('/', access, controller.getAutotypes);
+router.get('/', controller.getAutotypes);
 
 /**
  * @api {post} /api/autotypes/ POST autotypes

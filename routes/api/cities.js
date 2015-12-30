@@ -28,4 +28,6 @@ var access          = require('../../controllers/authController').access;
  */
 router.get('/', access,controller.getCities);
 
+router.get('/:id', access,controller.getCityById);
+
 module.exports = router;

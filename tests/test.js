@@ -58,7 +58,7 @@ describe('Bobs testing:',function(){
 xdescribe('Chatrooms testing:',function(){
     chatroomsTest(server,options);
 });
-describe('Destinations testing:',function(){
+xdescribe('Destinations testing:',function(){
     destinationsTest(server,options);
 });
 xdescribe('Friends testing:',function(){

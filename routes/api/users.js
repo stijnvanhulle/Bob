@@ -67,7 +67,8 @@ router.get('/', access, controller.getUsers);
  *     }
  */
 router.get('/online', access, controller.getUsersOnline);
+router.post('/find', access, controller.getUserByEmail);
 
-router.get('/:id', access, controller.getUsersById);
+router.get('/:id', access, controller.getUserById);
 
 module.exports = router;

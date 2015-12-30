@@ -2,7 +2,7 @@ var passport                = require('passport');
 var mysql                   = require('mysql');
 var LocalStrategy           = require('passport-local').Strategy;
 var FacebookStrategy        = require('passport-facebook').Strategy;
-var pool                    = require('./mysql');
+var pool                    = require('./mysql').getPool();
 
 
 var FACEBOOK={
@@ -13,35 +13,45 @@ var FACEBOOK={
 
 function findByEmail(email,password, fn) {
     pool.getConnection(function(error, connection) {
+        if (error) {
+            //connection.release();
+            console.log(error);
+            return fn(error, null);
+        }
+
         var query;
 
-        //TODO maken dat hij online toevoegt aan de db
+        query='SELECT Users.ID, Users.Firstname, Users.Lastname, Users.Email, Users.Cellphone, Users.Bobs_ID, (Bobs.Active =true AND  Bobs.Active IS NOT NULL) AS IsBob, (Bobs.Offer =true) AS CanOffer, (Users.Bobs_ID IS NOT NULL) as CanBeBob FROM Users LEFT JOIN Bobs ON Users.Bobs_ID=Bobs.ID  WHERE Users.Email=? AND Users.Password=?';
 
-            query='SELECT ID, FirstName, LastName, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users WHERE Email=? AND Password=?';
-
-            connection.query({//AND Password= ?
-                    sql: query,
-                    timeout: 40000 // 40s
-                },
-                [email, password],
-                function (error, rows, fields) {
-                    var user= rows;
-                    //console.log(user);
-                    connection.release();
-                    if(user!=null && user.length!=0){
-                        return fn(null, user);
-                    }else{
-                        return fn(null, null);
-                    }
-
+        connection.query({//AND Password= ?
+                sql: query,
+                timeout: 40000 // 40s
+            },
+            [email, password],
+            function (error, rows, fields) {
+                var user= rows;
+                connection.release();
+                if(user!=null && user.length!=0){
+                    return fn(null, user);
+                }else{
+                    return fn(null, null);
                 }
-            );
+
+            }
+        );
+
 
 
     });
 }
 function findByFacebookID(id, fn) {
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+
+            res.json({success: false, error: error});
+        }
+
         var query;
 
         query='SELECT ID, FirstName, LastName, Email, Cellphone, (Bobs_ID IS NOT NULL) AS IsBob FROM Users WHERE FacebookID=?';
@@ -55,6 +65,7 @@ function findByFacebookID(id, fn) {
                 var user= rows;
                 //console.log(user);
                 connection.release();
+
                 if(user!=null && user.length!=0){
                     return fn(null, user);
                 }else{
@@ -119,3 +130,5 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(user, done) {
     done(null, user);
 });
+
+

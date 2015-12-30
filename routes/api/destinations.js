@@ -43,6 +43,7 @@ router.get('/', access,controller.getDestinations);
  *     }
  */
 router.get('/default', access,controller.getDefaultDestination);
+router.post('/default', access,controller.postDefaultDestination);
 
 /**
  * @api {post} /api/destinations/ POST destination
@@ -68,6 +69,8 @@ router.get('/default', access,controller.getDefaultDestination);
  *     }
  */
 router.post('/', access, controller.postDestination);
+
+router.put('/', access, controller.putDestination);
 router.get('/:id', access, controller.getDestinationById);
 
 module.exports = router;

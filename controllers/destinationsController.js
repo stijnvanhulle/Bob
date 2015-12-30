@@ -2,7 +2,7 @@
  * Created by stijnvanhulle on 26/11/15.
  */
 var passport        = require('passport');
-var pool            = require('../libs/mysql');
+var pool            = require('../libs/mysql').getPool();
 var md5             = require('md5');
 var async           = require('async');
 
@@ -13,10 +13,18 @@ var getDestinations=function(req,res){
     var user_ID= req.user[0].ID;
 
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.query({
-                sql: "SELECT Users_Destinations.Users_ID,Users_Destinations.Destinations_ID,Users_Destinations.Default,Users_Destinations.Added,Users_Destinations.Name, Cities_ID, Location FROM Users_Destinations INNER JOIN Destinations " +
-                "ON Destinations.ID=Users_Destinations.Destinations_ID " +
-                "WHERE Users_ID=?",
+                sql: "SELECT Users_Destinations.Users_ID,Users_Destinations.Destinations_ID,Users_Destinations.Default,Users_Destinations.Added,Users_Destinations.Name, Cities_ID, Location " +
+                ", Cities.Name as Cities_Name FROM Users_Destinations " +
+                "INNER JOIN Destinations ON Destinations.ID=Users_Destinations.Destinations_ID " +
+                "INNER JOIN Cities ON Cities.ID=Destinations.Cities_ID " +
+                "WHERE Users_ID=? " +
+                "ORDER BY Users_Destinations.Default DESC",
                 timeout: 40000 // 40s
             },
             [user_ID],
@@ -37,13 +45,18 @@ var getDestinationById=function(req,res){
     var id= req.params.id;
 
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.query({
                 sql: "SELECT Users_Destinations.Users_ID,Users_Destinations.Destinations_ID,Users_Destinations.Default,Users_Destinations.Added,Users_Destinations.Name, Cities_ID, Location FROM Users_Destinations INNER JOIN Destinations " +
                 "ON Destinations.ID=Users_Destinations.Destinations_ID " +
-                "WHERE Users_ID=? AND Destinations.ID=?",
+                "WHERE Destinations.ID=?",
                 timeout: 40000 // 40s
             },
-            [user_ID, id],
+            [id],
             function (error, results, fields) {
                 connection.release();
                 if (error){
@@ -59,6 +72,11 @@ var getDestinationById=function(req,res){
 var getDefaultDestination=function(req,res){
     var user_ID= req.user[0].ID;
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.query({
                 sql: "SELECT Users_Destinations.Users_ID,Users_Destinations.Destinations_ID,Users_Destinations.Default,Users_Destinations.Added,Users_Destinations.Name, Cities_ID, Location FROM Users_Destinations INNER JOIN Destinations " +
                 "ON Destinations.ID=Users_Destinations.Destinations_ID " +
@@ -71,11 +89,63 @@ var getDefaultDestination=function(req,res){
                 if (error){
                     res.json({success:false, error:error.toString()});
                 } else{
+
                     res.json(results[0]);
                 }
             }
         );
     });
+};
+var postDefaultDestination=function(req,res){
+    var user_ID= req.user[0].ID;
+    var obj;
+    try {
+        obj = JSON.parse(req.body);
+    } catch (e) {
+        obj = req.body;
+    }
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
+        connection.query({
+                sql: "UPDATE Users_Destinations SET Users_Destinations.Default=1 WHERE Users_ID=? AND Destinations_ID=?",
+                timeout: 40000 // 40s
+            },
+            [user_ID, obj.DestinationsID],
+            function (error, results, fields) {
+                if (error){
+                    connection.release();
+                    res.json({success:false, error:error.toString()});
+                } else{
+                    SetOtherDefaultOnZero(connection,user_ID, obj.DestinationsID, function(result){
+                        connection.release();
+                        res.json({success:result});
+                    });
+
+                }
+            }
+        );
+    });
+};
+var SetOtherDefaultOnZero=function(connection,user_ID,DestinationsID, cb){
+    connection.query({
+            sql: "UPDATE Users_Destinations SET Users_Destinations.Default=0 WHERE Users_ID=? AND Destinations_ID != ?",
+            timeout: 40000 // 40s
+        },
+        [user_ID, DestinationsID],
+        function (error, results, fields) {
+            if (error){
+                cb(false);
+            } else{
+                cb(true);
+
+            }
+        }
+    );
 };
 
 var postDestination=function(req,res){
@@ -89,6 +159,11 @@ var postDestination=function(req,res){
     }
 
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.beginTransaction(function (err) {
             if (err) {
                 connection.release();
@@ -170,14 +245,49 @@ var addUserDestination=function(connection, destination, destination_ID, user_ID
 };
 
 
+var putDestination=function(req,res){
+    var user_ID= req.user[0].ID;
+    var obj;
+    try {
+        obj = JSON.parse(req.body);
+    } catch (e) {
+        obj = req.body;
+    }
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
+        connection.query({
+                sql: "UPDATE Users_Destinations SET Users_Destinations.Name=? WHERE Users_ID=? AND Destinations_ID=?",
+                timeout: 40000 // 40s
+            },
+            [obj.Name, user_ID, obj.DestinationsID],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false, error:error.toString()});
+                } else{
+                    res.json({success:true});
+                }
+            }
+        );
+    });
+};
+
+
 module.exports = (function(){
 
     //public api
     var publicAPI={
         getDestinations:getDestinations,
         getDefaultDestination:getDefaultDestination,
+        postDefaultDestination:postDefaultDestination,
         postDestination:postDestination,
-        getDestinationById:getDestinationById
+        getDestinationById:getDestinationById,
+        putDestination:putDestination
     };
 
     return publicAPI;

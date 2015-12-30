@@ -86,4 +86,6 @@ router.post('/area',jsonParser, controller.getPartiesInArea);
  */
 router.post('/', access, controller.postParty);
 
+router.get('/:id', access, controller.getPartyById);
+
 module.exports = router;

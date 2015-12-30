@@ -2,7 +2,7 @@
  * Created by stijnvanhulle on 26/11/15.
  */
 var passport        = require('passport');
-var pool            = require('../libs/mysql');
+var pool            = require('../libs/mysql').getPool();
 var md5             = require('md5');
 var async           = require('async');
 
@@ -11,6 +11,11 @@ var parser          = require('./libs/parser');
 
 var getStatuses=function(req,res){
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.query({
                 sql: 'SELECT * FROM Statuses',
                 timeout: 40000 // 40s
@@ -34,6 +39,11 @@ var postStatus=function(req,res){
     var obj= parser(req.body);
 
     pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
         connection.query({
                 sql: 'INSERT INTO Statuses(Name) VALUES(?)',
                 timeout: 40000 // 40s

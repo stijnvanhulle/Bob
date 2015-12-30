@@ -85,6 +85,11 @@ router.get('/success', function(req, res) {
 
 });
 
+router.get('/online', function(req, res) {
+    res.json({success: true});
+});
+
+
 /**
  * @api {get} /api/auth/callback GET Callback
  * @apiVersion 0.0.1
