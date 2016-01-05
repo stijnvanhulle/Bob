@@ -30,6 +30,9 @@ module.exports = function(io,cb) {
     socket.on('friend_REQUEST:send', function(msg){
       io.emit('friend_REQUEST',msg);
     });
+    socket.on('friend_ADDED:send', function(msg){
+      io.emit('friend_ADDED',msg);
+    });
 
     socket.on('chatroom_OPEN:send', function(msg){
       io.emit('chatroom_OPEN',msg);
@@ -37,6 +40,13 @@ module.exports = function(io,cb) {
     socket.on('chatroom_COMMENT:send', function(msg){
       io.emit('chatroom_COMMENT',msg);
     });
+    socket.on('user_location_NEW:send', function(msg){
+      io.emit('user_location_NEW',msg);
+    });
+    socket.on('status_UPDATE:send', function(msg){
+      io.emit('status_UPDATE',msg);
+    });
+
 
 
     if(global.socket!=null){

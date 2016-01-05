@@ -74,7 +74,7 @@ router.get('/profile/', access, controller.getProfile);
  *     }
  */
 router.get('/points/', access, controller.getPoints);
-
+router.post('/points/', access, controller.postPoint);
 /**
  * @api {get} /api/user/points/amount GET Total points
  * @apiVersion 0.0.1
@@ -92,6 +92,7 @@ router.get('/points/', access, controller.getPoints);
  */
 router.get('/points/amount', access, controller.getPointsAmount);
 
+router.get('/points/description', access, controller.getPointsDescription);
 /**
  * @api {post} /api/user/register POST Register
  * @apiVersion 0.0.1
@@ -185,7 +186,7 @@ router.put('/edit', jsonParser, access,controller.putUser);
  *       success: false
  *     }
  */
-router.post('/location',jsonParser, access,controller.postLocation);
+router.post('/location', access,controller.postLocation);
 
 /**
  * @api {get} /api/user/location GET Location

@@ -133,7 +133,7 @@ var getBobsOnline=function(req,res){
                 'Users_Locations.Location as Location FROM Users ' +
                 'RIGHT JOIN Bobs ON Users.Bobs_ID=Bobs.ID ' +
                 'LEFT JOIN Users_Locations ON Users_Locations.Users_ID=Users.ID ' +
-                'WHERE Users.Online=true ' +
+                'WHERE Users.Online=true AND Bobs.Offer=true ' +
                 'GROUP BY Bobs.ID',
                 timeout: 40000 // 40s
             },
@@ -416,12 +416,15 @@ var getBobsNearby=function(connection,location, maxDistance,date, cb){
         function (error, results, fields) {
             if(!error){
                 for(var i=0;i<results.length;i++){
-                    var locationN={'latitude':location.Latitude, 'longitude': location.Longitude};
-                    var distanceInMeters=geolib.getDistance(
-                        locationN,
-                        JSON.parse(results[i].Location)
-                    );
-                    results[i].DistanceInMeters=distanceInMeters;
+                    if(location!=null){
+                        var locationN={'latitude':location.Latitude, 'longitude': location.Longitude};
+                        var distanceInMeters=geolib.getDistance(
+                            locationN,
+                            JSON.parse(results[i].Location)
+                        );
+                        results[i].DistanceInMeters=distanceInMeters;
+                    }
+
                 }
                 cb(null,results);
             }else{

@@ -92,7 +92,7 @@ router.post('/location', access, controller.postLocation);
 router.post('/difference', access, controller.postDifference);
 
 router.put('/active', access, controller.putActive);
-router.post('rating', access, controller.addRating);
+router.post('/rating', access, controller.addRating);
 
 router.get(':id', access, controller.getTripById);
 

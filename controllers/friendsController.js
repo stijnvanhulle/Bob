@@ -15,10 +15,12 @@ var getFriends=function(req,res){
         'User1.Firstname as User1_Firstname,User1.Lastname as User1_Lastname,User1.Email as User1_Email,User1.Cellphone as User1_Cellphone,User1.Bobs_ID as User1_Bobs_ID,User1.FacebookID as User1_FacebookID,User1.Added as User1_Added,User1.Online as User1_Online, ' +
         'Friends.Friends_ID as User2_ID, Friends.Accepted, Friends.Added, ' +
         'User2.Firstname as User2_Firstname,User2.Lastname as User2_Lastname,User2.Email as User2_Email,User2.Cellphone as User2_Cellphone,User2.Bobs_ID as User2_Bobs_ID,User2.FacebookID as User2_FacebookID,User2.Added as User2_Added,User2.Online as User2_Online ' +
-        'FROM Friends ' +
+        ',Users_Locations.Location as Location FROM Friends ' +
         'INNER JOIN Users as User1 ON Friends.Users_ID=User1.ID ' +
         'INNER JOIN Users as User2 ON Friends.Friends_ID=User2.ID ' +
-        'WHERE User1.ID=? ';
+        'INNER JOIN Users_Locations ON User2.ID=Users_Locations.Users_ID ' +
+        'WHERE User1.ID=? ' +
+        'GROUP BY User1.ID ';
 
     pool.getConnection(function(error, connection) {
         if (error) {
@@ -62,7 +64,8 @@ var getFriends=function(req,res){
                                     Online: results[i].User2_Online
                                 },
                                 Added: results[i].Added,
-                                Accepted: results[i].Accepted
+                                Accepted: results[i].Accepted,
+                                Location: results[i].Location
                             };
                             data.push(item);
                         }
@@ -80,10 +83,12 @@ var findFriend=function(req,res){
         'User1.Firstname as User1_Firstname,User1.Lastname as User1_Lastname,User1.Email as User1_Email,User1.Cellphone as User1_Cellphone,User1.Bobs_ID as User1_Bobs_ID,User1.FacebookID as User1_FacebookID,User1.Added as User1_Added,User1.Online as User1_Online, ' +
         'Friends.Friends_ID as User2_ID, Friends.Accepted, Friends.Added, ' +
         'User2.Firstname as User2_Firstname,User2.Lastname as User2_Lastname,User2.Email as User2_Email,User2.Cellphone as User2_Cellphone,User2.Bobs_ID as User2_Bobs_ID,User2.FacebookID as User2_FacebookID,User2.Added as User2_Added,User2.Online as User2_Online ' +
-        'FROM Friends ' +
+        ',Users_Locations.Location as Location FROM Friends  ' +
         'INNER JOIN Users as User1 ON Friends.Users_ID=User1.ID ' +
         'INNER JOIN Users as User2 ON Friends.Friends_ID=User2.ID ' +
-        'WHERE User1.ID=? ';
+        'INNER JOIN Users_Locations ON User2.ID=Users_Locations.Users_ID ' +
+        'WHERE User1.ID=? ' +
+        'GROUP BY User1.ID';
 
     pool.getConnection(function(error, connection) {
         if (error) {
@@ -127,7 +132,8 @@ var findFriend=function(req,res){
                                 Online: results[i].User2_Online
                             },
                             Added: results[i].Added,
-                            Accepted: results[i].Accepted
+                            Accepted: results[i].Accepted,
+                            Location: results[i].Location
                         };
                         data.push(item);
                     }

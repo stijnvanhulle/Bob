@@ -42,8 +42,8 @@ var getProfile=function(req,res){
 
     if(user_ID!=null){
         sql='SELECT Users.ID as Users_ID, Users.Firstname as Users_Firstname, Users.Lastname as Users_Lastname, Users.Email as Users_Email, Users.Cellphone as Users_Cellphone, ' +
-            '(Bobs.Active =true AND  Bobs.Active IS NOT NULL) AS IsBob, (Bobs.Offer =true AND) AS CanOffer, (Users.Bobs_ID IS NOT NULL) as CanBeBob, '+
-            'Bobs.ID as Bobs_ID, Bobs.BobsType_ID as Bobs_BobsType_ID, Bobs.Autotype_ID as Bobs_Autotype_ID, Bobs.PricePerKm as Bobs_PricePerKm, Bobs.LicensePlate as Bobs_LicensePlate, Bobs.Added as Bobs_Added, Bobs.Active as Bobs_Active, Bobs_Offer as Bobs_Offer ' +
+            '(Bobs.Active =true AND  Bobs.Active IS NOT NULL) AS IsBob, (Bobs.Offer =true) AS CanOffer, (Users.Bobs_ID IS NOT NULL) as CanBeBob, '+
+            'Bobs.ID as Bobs_ID, Bobs.BobsType_ID as Bobs_BobsType_ID, Bobs.Autotype_ID as Bobs_Autotype_ID, Bobs.PricePerKm as Bobs_PricePerKm, Bobs.LicensePlate as Bobs_LicensePlate, Bobs.Added as Bobs_Added, Bobs.Active as Bobs_Active, Bobs.Offer as Bobs_Offer, ' +
             'Bobs.Autotype_ID as Autotype_ID, Autotypes.Name as Autotype_Name, Bobs.LicensePlate FROM Users '+
             'LEFT JOIN Bobs ON Users.Bobs_ID=Bobs.ID '+
             'LEFT JOIN BobsType ON BobsType.ID=Bobs.BobsType_ID '+
@@ -348,11 +348,11 @@ var postLocation=function(req,res){
     });
 };
 
-//Users_PointsDescription
-var postPointsDescription=function(req,res){
+var postPoint=function(req,res){
     var user_ID= req.user[0].ID;
     var sql='INSERT INTO Users_PointsDescription(Users_ID,PointsDescription_ID) VALUES(?,?)';
     var obj= parser(req.body);
+
 
     pool.getConnection(function(error, connection) {
         if (error) {
@@ -371,6 +371,106 @@ var postPointsDescription=function(req,res){
                 }else{
                     res.json({success:true});
                 }
+            });
+    });
+};
+
+
+//Users_PointsDescription
+var postPointsDescription=function(req,res){
+    var user_ID= req.user[0].ID;
+
+    var obj= parser(req.body);
+    var rating=obj.PointsDescription_ID;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success: false, error: error});
+        }
+        getTrips(connection, user_ID,rating, req.user[0].IsBob, function(error,result){
+            if(error){
+                res.json({success:false});
+            }else{
+                connection.query({
+                        sql: 'INSERT INTO Users_PointsDescription(Users_ID,PointsDescription_ID) VALUES(?,?)',
+                        timeout: 40000 // 40s
+                    },
+                    [user_ID,result],
+                    function (error, rows, fields) {
+                        connection.release();
+                        if(error){
+                            res.json({success:false,error:error.message});
+                        }else{
+                            res.json({success:true});
+                        }
+                    });
+            }
+
+
+        });
+
+    });
+};
+
+var getTrips=function(connection, user_ID,rating, isBob, cb){
+    if(rating==null){
+        connection.query({
+                sql: 'SELECT Count(ID) as Amount FROM Trips ' +
+                'WHERE Users_ID=?',
+                timeout: 40000 // 40s
+            },
+            [user_ID],
+            function (error, rows, fields) {
+                connection.release();
+                if(error){
+                    cb(error,null);
+                }else {
+                    if (isBob == true && result[0].Amount == 0) {
+                        cb(null, 2);
+                    }
+                    if (isBob != true && result[0].Amount == 0) {
+                        cb(null, 1);
+                    }
+
+                    if (result[0].Amount == 100) {
+                        cb(null, 5);
+                    } else {
+                        cb(null, 4);
+                    }
+
+                }
+            });
+    }else{
+        cb(null,rating);
+    }
+
+};
+
+var getPointsDescription=function(req,res){
+    var user_ID= req.user[0].ID;
+    var sql='SELECT * FROM PointsDescription';
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success: false, error: error});
+        }
+
+        connection.query({
+                sql: sql,
+                timeout: 40000 // 40s
+            },
+            [user_ID],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false});
+                } else{
+                    res.json(results);
+                }
+
+
             });
     });
 };
@@ -465,11 +565,11 @@ var addUser=function(connection, user, bobs_ID, cb){
     if(bobs_ID==null){
         sql='INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID) ' +
             'VALUES (?,?,?,?,?,?)';
-        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID];
+        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.Password, user.FacebookID];
     }else{
         sql='INSERT INTO Users (Firstname,Lastname,Email,Cellphone,Password, FacebookID, Bobs_ID) ' +
             'VALUES (?,?,?,?,?,?,?)';
-        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID, bobs_ID];
+        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.Password, user.FacebookID, bobs_ID];
 
     }
 
@@ -526,14 +626,14 @@ var editUser=function(connection, user, cb){
         }else{
             sql='UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?, FacebookID=? ' +
                 'WHERE Users.ID=?';
-            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID, user.Users_ID];
+            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone,user.Password, user.FacebookID, user.Users_ID];
         }
 
 
     }else{
         sql= 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?,FacebookID=?,Bobs_ID=? ' +
             'WHERE Users.ID=?';
-        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, md5(user.Password), user.FacebookID, user.bobs_ID, user.Users_ID ];
+        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.Password, user.FacebookID, user.bobs_ID, user.Users_ID ];
     }
     connection.query({
             sql: sql,
@@ -594,9 +694,11 @@ module.exports = (function(){
         getPointsAmount:getPointsAmount,
         postUser:postUser,
         postPointsDescription:postPointsDescription,
+        getPointsDescription:getPointsDescription,
         putUser:putUser,
         getLocation:getLocation,
         postLocation:postLocation,
+        postPoint:postPoint,
         putChange:putChange
     };
 

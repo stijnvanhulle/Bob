@@ -133,7 +133,7 @@ var getChatroomByID=function(req,res){
             'INNER JOIN Users ON Users.ID= ChatComments.Users_ID ' +
             'RIGHT JOIN ChatRooms ON ChatRooms.ID=ChatComments.ChatRooms_ID ' +
             'WHERE ChatRooms.ID=? ' +
-            'ORDER BY ChatComments.Added DESC';
+            'ORDER BY ChatComments.Added ASC';
     }else{
         res.json({success:false});
     }

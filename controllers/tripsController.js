@@ -58,12 +58,12 @@ var getTripById=function(req,res){
             arr=[user_ID, req.params.id];
         }
         sql='SELECT Trips.ID as ID,Trips.Active as Active, Statuses.Name as Status_Name, Statuses.ID as StatusID, Trips.Party_ID as Party_ID, Trips.Bobs_ID as Bobs_ID, ' +
-            'a.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
+            'Trips.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
             ',Bobs_Parties.Rating FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
             'LEFT JOIN Trips_Locations ON Trips_Locations.Trips_ID=Trips.ID ' +
-            'LEFT JOIN Statuses ON Statuses.ID= Trips_Locations.Statuses_ID ' +
+            'INNER JOIN Statuses ON Statuses.ID= Trips_Locations.Statuses_ID ' +
             'INNER JOIN Destinations ON Destinations.ID=a.Destinations_ID '+
             'INNER JOIN Cities On Cities.ID=Destinations.Cities_ID ' +
             'LEFT JOIN Bobs_Parties ON Trips.ID=Bobs_Parties.Trips_ID '+
@@ -112,7 +112,7 @@ var getTrips=function(req,res){
             arr=[user_ID];
         }
         sql='SELECT Trips.ID as ID,Trips.Active as Active, Statuses.Name as Status_Name, Statuses.ID as StatusID, Trips.Party_ID as Party_ID, Trips.Bobs_ID as Bobs_ID, ' +
-            'a.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
+            'Trips.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
             ',Bobs_Parties.Rating FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
@@ -122,7 +122,8 @@ var getTrips=function(req,res){
             'INNER JOIN Cities On Cities.ID=Destinations.Cities_ID ' +
             'LEFT JOIN Bobs_Parties ON Trips.ID=Bobs_Parties.Trips_ID '+
              extra +
-            ' ORDER BY Trips.Added DESC';
+            'GROUP BY Trips.ID '+
+            ' ORDER BY Trips.Added DESC ';
     }else{
         res.json({success:false});
     }
@@ -166,7 +167,7 @@ var getCurrentTrip=function(req,res){
             arr=[user_ID];
         }
         sql='SELECT Trips.ID as ID,Trips.Active as Active, Statuses.Name as Status_Name, Statuses.ID as StatusID, Trips.Party_ID as Party_ID, Trips.Bobs_ID as Bobs_ID, ' +
-            'a.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
+            'Trips.Users_ID as Users_ID, Trips.Added as Added, Trips.Friends as Friends, a.Destinations_ID as Destinations_ID ' +
             ',Bobs_Parties.Rating FROM Trips '+
             'INNER JOIN Users_Destinations as a ON Trips.Destinations_ID= a.Destinations_ID '+
             'INNER JOIN Users ON Users.ID= a.Users_ID '+
@@ -176,7 +177,7 @@ var getCurrentTrip=function(req,res){
             'INNER JOIN Cities On Cities.ID=Destinations.Cities_ID ' +
             'LEFT JOIN Bobs_Parties ON Trips.ID=Bobs_Parties.Trips_ID '+
              extra +
-            ' ORDER BY Trips.Added DESC '+
+            ' ORDER BY Trips_Locations.Added DESC '+
             'LIMIT 1';
     }else{
         res.json({success:false});
@@ -247,7 +248,7 @@ var addRating=function(req,res){
                 sql: sql,
                 timeout: 40000 // 40s
             },
-            [user_ID,obj.Party_ID,obj.Bobs_ID,obj.Trips_ID, obj.Rating],
+            [obj.Users_ID,obj.Party_ID,obj.Bobs_ID,obj.Trips_ID, obj.Rating],
             function (error, rows, fields) {
                 connection.release();
                 if(error){
@@ -314,6 +315,9 @@ var putActive =function(req,res){
     });
 };
 
+
+
+
 var postDifference=function(req,res){
     var obj= parser(req.body);
 
@@ -323,7 +327,7 @@ var postDifference=function(req,res){
     var distanceInMeters=geolib.getDistance(
         from,to
     );
-    if(distanceInMeters<=1000){
+    if(distanceInMeters<=400){
         res.json({success:true, value: distanceInMeters});
     }else{
         res.json({success:false});
