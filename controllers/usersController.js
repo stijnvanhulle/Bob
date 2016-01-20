@@ -101,7 +101,8 @@ var getUsersOnline=function(req,res){
                                 Lastname: results[i].Users_Lastname,
                                 Email: results[i].Users_Email,
                                 Cellphone: results[i].Users_Cellphone,
-                                IsBob: results[i].IsBob
+                                IsBob: results[i].IsBob,
+                                Online:true
                             };
                         }
                         var item={

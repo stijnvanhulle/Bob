@@ -160,10 +160,10 @@ var getCurrentTrip=function(req,res){
     if(user_ID!=null){
         var extra="";
         if(req.user[0].IsBob==true){
-            extra="WHERE Trips.Bobs_ID=? ";
+            extra="WHERE Trips.Bobs_ID=? AND Trips.Active=true ";
             arr=[req.user[0].Bobs_ID];
         }else{
-            extra="WHERE Trips.Users_ID=? ";
+            extra="WHERE Trips.Users_ID=? AND Trips.Active=true ";
             arr=[user_ID];
         }
         sql='SELECT Trips.ID as ID,Trips.Active as Active, Statuses.Name as Status_Name, Statuses.ID as StatusID, Trips.Party_ID as Party_ID, Trips.Bobs_ID as Bobs_ID, ' +
@@ -330,7 +330,7 @@ var postDifference=function(req,res){
     if(distanceInMeters<=400){
         res.json({success:true, value: distanceInMeters});
     }else{
-        res.json({success:false});
+        res.json({success:false, value: distanceInMeters});
     }
 };
 //custom

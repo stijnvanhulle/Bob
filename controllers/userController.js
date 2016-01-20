@@ -78,13 +78,16 @@ var getProfile=function(req,res){
                             Lastname: results[i].Users_Lastname,
                             Email: results[i].Users_Email,
                             Cellphone: results[i].Users_Cellphone,
-                            IsBob: results[i].IsBob
+                            IsBob: results[i].IsBob,
+                            Bobs_ID: results[i].Bobs_ID,
+                            CanBeBob:results[i].CanBeBob,
+                            CanOffer:results[i].CanOffer
                         };
                     }
                     var item={
                         User:user,
                         Bob:{
-                            ID: results[i].Bob_ID,
+                            ID: results[i].Bobs_ID,
                             BobsType_ID: results[i].Bobs_BobsType_ID,
                             LicensePlate: results[i].Bobs_LicensePlate,
                             Added: results[i].Bobs_Added,
@@ -98,7 +101,7 @@ var getProfile=function(req,res){
                             Name: results[i].Autotype_Name
                         }
                     };
-                    if(item.Bob.ID==null){
+                    if(results[i].Bobs_ID==null){
                         res.json({User:user});
                     }else{
                         res.json(item);
@@ -618,7 +621,7 @@ var addBob=function(connection, user, cb){
 var editUser=function(connection, user, cb){
     var sql;
     var items;
-    if(user.bobs_ID==null){
+    if(user.Bobs_ID==null){
         if(user.Password==null){
             sql='UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?, FacebookID=? ' +
                 'WHERE Users.ID=?';
@@ -631,9 +634,16 @@ var editUser=function(connection, user, cb){
 
 
     }else{
-        sql= 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?,FacebookID=?,Bobs_ID=? ' +
-            'WHERE Users.ID=?';
-        items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.Password, user.FacebookID, user.bobs_ID, user.Users_ID ];
+        if(user.Password==null){
+            sql= 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,FacebookID=?,Bobs_ID=? ' +
+                'WHERE Users.ID=?';
+            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.FacebookID, user.Bobs_ID, user.Users_ID ];
+        }else{
+            sql= 'UPDATE Users SET Firstname=?,Lastname=?,Email=?,Cellphone=?,Password=?,FacebookID=?,Bobs_ID=? ' +
+                'WHERE Users.ID=?';
+            items=[user.Firstname,user.Lastname,user.Email,user.Cellphone, user.Password, user.FacebookID, user.Bobs_ID, user.Users_ID ];
+        }
+
     }
     connection.query({
             sql: sql,
@@ -651,19 +661,31 @@ var editUser=function(connection, user, cb){
 };
 
 var editBob=function(connection, user, cb){
-    connection.query({
-            sql: 'UPDATE Bobs SET PricePerKm=?, BobsType_ID=?, LicensePlate=?, AutoType_ID=? ' +
-            'WHERE Bobs.ID=?',
-            timeout: 40000 // 40s
-        },
-        [user.PricePerKm, user.BobsType_ID,user.LicensePlate, user.AutoType_ID, user.Bobs_ID],
-        function (error, rows, fields) {
-            if (error) {
-                cb(error);
-            }else{
+    if(user.Bobs_ID==null){
+        addBob(connection, user, function (err, id) {
+            if (err) {
+                cb(err);
+            } else {
+                user.Bobs_ID=id;
                 cb(null);
             }
         });
+    }else{
+        connection.query({
+                sql: 'UPDATE Bobs SET PricePerKm=?, BobsType_ID=?, LicensePlate=?, AutoType_ID=? ' +
+                'WHERE Bobs.ID=?',
+                timeout: 40000 // 40s
+            },
+            [user.PricePerKm, user.BobsType_ID,user.LicensePlate, user.AutoType_ID, user.Bobs_ID],
+            function (error, rows, fields) {
+                if (error) {
+                    cb(error);
+                }else{
+                    cb(null);
+                }
+            });
+    }
+
 };
 
 var bobExist=function(user_ID, connection, cb){
@@ -678,7 +700,12 @@ var bobExist=function(user_ID, connection, cb){
             if (error){
                 cb(error);
             } else{
-                cb(results[0].Exist);
+                if(results[0]!=null){
+                    cb(results[0].Exist);
+                }else{
+                    cb(false);
+                }
+
             }
         }
     );

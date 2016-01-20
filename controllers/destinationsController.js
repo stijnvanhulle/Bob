@@ -277,6 +277,38 @@ var putDestination=function(req,res){
     });
 };
 
+var removeDestination=function(req,res){
+    var user_ID= req.user[0].ID;
+    var obj;
+    try {
+        obj = JSON.parse(req.body);
+    } catch (e) {
+        obj = req.body;
+    }
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+
+            res.json({success : false, error : error});
+            return;
+        }
+        connection.query({
+                sql: "DELETE FROM Users_Destinations WHERE Users_ID=? AND Destinations_ID=?",
+                timeout: 40000 // 40s
+            },
+            [user_ID, obj.Destinations_ID],
+            function (error, results, fields) {
+                connection.release();
+                if (error){
+                    res.json({success:false, error:error.toString()});
+                } else{
+                    res.json({success:true});
+                }
+            }
+        );
+    });
+};
+
 
 module.exports = (function(){
 
@@ -287,7 +319,8 @@ module.exports = (function(){
         postDefaultDestination:postDefaultDestination,
         postDestination:postDestination,
         getDestinationById:getDestinationById,
-        putDestination:putDestination
+        putDestination:putDestination,
+        removeDestination:removeDestination
     };
 
     return publicAPI;

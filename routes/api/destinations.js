@@ -70,6 +70,8 @@ router.post('/default', access,controller.postDefaultDestination);
  */
 router.post('/', access, controller.postDestination);
 
+router.post('/remove',access,controller.removeDestination);
+
 router.put('/', access, controller.putDestination);
 router.get('/:id', access, controller.getDestinationById);
 
